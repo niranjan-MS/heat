@@ -1916,7 +1916,7 @@
                 <small>Watch codes. Control camera. Save alerts.</small>
               </button>
             </div>
-            <div class="corner-version">v2.4.5</div>
+            <div class="corner-version">v2.4.6</div>
           </section>
         `);
         document.getElementById("senderBtn").addEventListener("click", () => startSender());
@@ -2937,15 +2937,19 @@
         }
 
         updateNightVision(luma, noise) {
-          const next = nightFromLuma(luma, noise);
           const oldLevel = this.night?.level || 0;
-          const smoothLevel = oldLevel * 0.82 + next.level * 0.18;
+          // Compensate the measured luma for active hardware exposure and brightness boosts
+          // to prevent positive feedback loops and oscillations
+          const compensatedLuma = Math.max(5, luma - oldLevel * 82);
+          const next = nightFromLuma(compensatedLuma, noise);
+          const smoothLevel = oldLevel * 0.85 + next.level * 0.15;
           this.night = {
             ...next,
             level: smoothLevel,
             brightness: 1 + smoothLevel * 2.25,
             contrast: 1.0,
-            saturate: 1 - smoothLevel * 0.28
+            saturate: 1 - smoothLevel * 0.28,
+            luma: Math.round(luma * 10) / 10 // Store raw luma for user display diagnostics
           };
           this.applyPresentation();
           if (Math.abs(this.night.level - oldLevel) > 0.06) this.broadcastState();
