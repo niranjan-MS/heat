@@ -1,0 +1,3399 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="data:,">
+  <title>Heat</title>
+  <style>
+    :root {
+      --bg: #000;
+      --fg: rgba(255, 255, 255, 0.92);
+      --muted: rgba(255, 255, 255, 0.58);
+      --panel: rgba(255, 255, 255, 0.045);
+      --panel-strong: rgba(255, 255, 255, 0.075);
+      --line: rgba(255, 255, 255, 0.22);
+      --hot: #ff2b2b;
+      --ok: #21d07a;
+      --warn: #ffb020;
+      --glass: rgba(255, 255, 255, 0.055);
+      --glass-soft: rgba(255, 255, 255, 0.032);
+      --glass-bright: rgba(255, 255, 255, 0.12);
+      --shadow: 0 24px 90px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 -1px 0 rgba(255, 255, 255, 0.07);
+      --ease-ios: cubic-bezier(0.22, 1, 0.36, 1);
+      font-family: "Aptos", "Segoe UI Variable", "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body,
+    #app {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--fg);
+    }
+
+    body {
+      font-family: var(--font, "Aptos", "Segoe UI Variable", "Inter", ui-sans-serif, system-ui, sans-serif);
+      line-height: 1.35;
+      touch-action: manipulation;
+      user-select: none;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--fg);
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 700;
+      min-height: 42px;
+      padding: 0 16px;
+      box-shadow: none;
+      transition: transform 220ms var(--ease-ios), border-color 220ms var(--ease-ios), background 220ms var(--ease-ios), color 220ms var(--ease-ios), box-shadow 220ms var(--ease-ios);
+    }
+
+    button:hover {
+      border-color: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    button:disabled {
+      color: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.02);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    input {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(0, 0, 0, 0.25);
+      color: var(--fg);
+      border-radius: 14px;
+      font-weight: 700;
+      min-height: 44px;
+      outline: none;
+      padding: 0 14px;
+      text-transform: uppercase;
+      transition: border-color 280ms var(--ease-ios), background 280ms var(--ease-ios), box-shadow 280ms var(--ease-ios);
+    }
+
+    input:focus {
+      border-color: rgba(255, 255, 255, 0.45);
+      background: rgba(0, 0, 0, 0.35);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 140px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+      outline: none;
+      border: none;
+      padding: 0;
+      min-height: auto;
+      cursor: pointer;
+      transition: background 320ms var(--ease-ios);
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--hot);
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(255, 43, 43, 0.65);
+      margin-top: -6px;
+      transition: transform 180ms var(--ease-ios), background-color 180ms var(--ease-ios);
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+      background: #ff5e5e;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:active {
+      transform: scale(1.1);
+      background: #e02424;
+    }
+
+    input[type="range"]::-moz-range-track {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: transparent;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--hot);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 0 12px rgba(255, 43, 43, 0.65);
+      transition: transform 180ms var(--ease-ios);
+    }
+
+    input[type="range"]::-moz-range-thumb:hover {
+      transform: scale(1.25);
+    }
+
+    input[type="number"] {
+      text-transform: none;
+    }
+
+    .screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      animation: riseFade 520ms var(--ease-ios);
+    }
+
+    @keyframes riseFade {
+      from { opacity: 0; transform: translateY(10px) scale(0.985); filter: blur(8px); }
+      to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    }
+
+    .home {
+      display: grid;
+      align-content: center;
+      gap: clamp(18px, 4vmin, 34px);
+      place-items: center;
+      padding: clamp(24px, 8vmin, 58px);
+      text-align: center;
+    }
+
+    .brand {
+      width: min(520px, 100%);
+    }
+
+    .brand h1 {
+      margin: 0 0 8px;
+      font-size: clamp(42px, 13vw, 96px);
+      font-weight: 900;
+      letter-spacing: 0;
+      line-height: 0.9;
+    }
+
+    .brand p {
+      margin: 0 auto;
+      max-width: 44ch;
+      color: var(--muted);
+      font-size: clamp(13px, 3.1vw, 17px);
+    }
+
+    .home-actions {
+      display: grid;
+      gap: 14px;
+      width: min(460px, 100%);
+    }
+
+    .home-actions button {
+      display: grid;
+      align-content: center;
+      justify-items: start;
+      text-align: left;
+      height: clamp(92px, 20vh, 150px);
+      font-weight: 850;
+      letter-spacing: 0;
+      border-radius: 34px;
+      background: var(--glass);
+      backdrop-filter: blur(34px) saturate(1.8) contrast(1.12) brightness(1.12);
+      -webkit-backdrop-filter: blur(34px) saturate(1.8) contrast(1.12) brightness(1.12);
+      box-shadow: var(--shadow);
+      padding: 0 22px;
+    }
+
+    .home-actions button:hover {
+      background: rgba(255, 255, 255, 0.075);
+    }
+
+    .overlay button,
+    .receiver-bar button,
+    .remote-controls button,
+    .gallery-head button,
+    .modal-card button,
+    .peer-chip,
+    .rename {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      font-weight: 700;
+      min-height: 38px;
+      padding: 0 14px;
+      font-size: 13px;
+      letter-spacing: 0.2px;
+      transition: all 260ms var(--ease-ios);
+    }
+
+    .overlay button:hover,
+    .receiver-bar button:hover,
+    .remote-controls button:hover,
+    .gallery-head button:hover,
+    .modal-card button:hover,
+    .peer-chip:hover,
+    .rename:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+    }
+
+    .overlay button:active,
+    .receiver-bar button:active,
+    .remote-controls button:active,
+    .peer-chip:active {
+      transform: translateY(1px) scale(0.97);
+    }
+
+    .home-actions button span {
+      display: block;
+      font-size: clamp(28px, 8vw, 48px);
+      line-height: 1;
+    }
+
+    .home-actions button small {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: clamp(11px, 2.8vw, 14px);
+      font-weight: 650;
+    }
+
+    .video-stage,
+    .feed {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+
+    video {
+      position: relative;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+      transform-origin: center center;
+      transition: filter 220ms linear, transform 180ms ease;
+      opacity: 1;
+      will-change: filter, transform;
+    }
+
+    video.fading {
+      opacity: 0.28;
+      transition: opacity 520ms var(--ease-ios);
+    }
+
+    video.rotated-quarter {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      max-width: none;
+      max-height: none;
+    }
+
+    .overlay {
+      position: absolute;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(15, 15, 15, 0.6);
+      backdrop-filter: blur(28px) saturate(1.9) brightness(0.95);
+      -webkit-backdrop-filter: blur(28px) saturate(1.9) brightness(0.95);
+      border-radius: 20px;
+      padding: 10px 14px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      transition: all 420ms var(--ease-ios);
+    }
+
+    .overlay::before,
+    .remote-controls::before,
+    .gallery-shell::before,
+    .modal-card::before {
+      content: "";
+      position: absolute;
+      inset: 1px;
+      border-radius: inherit;
+      pointer-events: none;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.22), transparent 32%),
+        radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.18), transparent 28%);
+      opacity: 0.42;
+      mix-blend-mode: screen;
+    }
+
+    .top-left {
+      top: max(10px, env(safe-area-inset-top));
+      left: max(10px, env(safe-area-inset-left));
+    }
+
+    .top-right {
+      top: max(10px, env(safe-area-inset-top));
+      right: max(10px, env(safe-area-inset-right));
+    }
+
+    .bottom-center {
+      left: 50%;
+      bottom: max(12px, env(safe-area-inset-bottom));
+      justify-content: center;
+      transform: translateX(-50%);
+      max-width: calc(100% - 20px);
+      overflow-x: auto;
+    }
+
+    .code-pill {
+      min-width: 76px;
+      text-align: center;
+      font-size: 26px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .mini {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+      white-space: nowrap;
+    }
+
+    .range-label {
+      display: grid;
+      gap: 2px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 760;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .status {
+      position: absolute;
+      z-index: 7;
+      left: 50%;
+      bottom: max(74px, calc(env(safe-area-inset-bottom) + 74px));
+      max-width: calc(100% - 24px);
+      transform: translateX(-50%);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: var(--glass);
+      backdrop-filter: blur(30px) saturate(1.8);
+      -webkit-backdrop-filter: blur(30px) saturate(1.8);
+      border-radius: 999px;
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 12px;
+      line-height: 1.3;
+      padding: 7px 10px;
+      pointer-events: none;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .status.error {
+      color: #ff9a9a;
+      border-color: rgba(255, 43, 43, 0.35);
+    }
+
+    .zone {
+      position: fixed;
+      z-index: 5;
+      border: 2px solid var(--hot);
+      background: rgba(255, 0, 0, 0.04);
+      min-width: 22px;
+      min-height: 22px;
+      touch-action: none;
+      cursor: move;
+      transition: border-radius 360ms var(--ease-ios), box-shadow 280ms var(--ease-ios), background 320ms var(--ease-ios);
+      will-change: left, top, width, height;
+    }
+
+    .zone[data-shape="ellipse"] {
+      border-radius: 999px;
+    }
+
+    .zone.motion {
+      box-shadow: 0 0 0 2px rgba(255, 43, 43, 0.28), 0 0 24px rgba(255, 43, 43, 0.42);
+    }
+
+    .zone-handle {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      background: var(--hot);
+      border-radius: 50%;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.32);
+    }
+
+    .zone-handle[data-handle="sw"] { left: -9px; bottom: -9px; cursor: nesw-resize; }
+
+    .night-badge {
+      color: #bde6ff;
+    }
+
+    .receiver {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      height: 100%;
+    }
+
+    .receiver-bar {
+      position: relative;
+      z-index: 32;
+      display: grid;
+      grid-template-columns: auto 1fr auto auto auto auto;
+      gap: 8px;
+      align-items: center;
+      padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) 8px max(8px, env(safe-area-inset-left));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      background: var(--glass-soft);
+      backdrop-filter: blur(38px) saturate(1.9) contrast(1.14) brightness(1.08);
+      -webkit-backdrop-filter: blur(38px) saturate(1.9) contrast(1.14) brightness(1.08);
+      box-shadow: 0 14px 50px rgba(0, 0, 0, 0.2);
+    }
+
+    .receiver-bar input {
+      width: 100%;
+      height: 52px;
+      letter-spacing: 0;
+      font-weight: 700;
+      padding: 20px 12px 4px;
+    }
+
+    .code-field {
+      position: relative;
+      min-width: 0;
+    }
+
+    .code-help {
+      position: absolute;
+      top: 6px;
+      left: 13px;
+      right: 13px;
+      overflow: hidden;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 10px;
+      font-weight: 720;
+      line-height: 1.1;
+      pointer-events: none;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .code-field.has-value .code-help {
+      color: rgba(255, 255, 255, 0.34);
+    }
+
+    .known-peers {
+      position: relative;
+      z-index: 31;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 8px max(8px, env(safe-area-inset-right)) 8px max(8px, env(safe-area-inset-left));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--glass-soft);
+      backdrop-filter: blur(32px) saturate(1.75) contrast(1.1);
+      -webkit-backdrop-filter: blur(32px) saturate(1.75) contrast(1.1);
+    }
+
+    .peer-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: max-content;
+      min-height: 38px;
+      border-radius: 999px;
+      padding: 0 12px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.86);
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .peer-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.34);
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
+    }
+
+    .peer-dot.online {
+      background: var(--ok);
+      box-shadow: 0 0 14px rgba(33, 208, 122, 0.85);
+    }
+
+    .grid {
+      display: grid;
+      width: 100%;
+      height: 100%;
+      gap: 1px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .grid.count-0 {
+      display: grid;
+      place-items: center;
+      background: #000;
+    }
+
+    .grid.count-1 {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr;
+    }
+
+    .grid.count-2 {
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: 1fr;
+    }
+
+    .grid.count-3,
+    .grid.count-4 {
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+    }
+
+    @media (orientation: portrait) {
+      .grid.count-2 {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(2, 1fr);
+      }
+    }
+
+    .empty {
+      max-width: 34ch;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .feed {
+      min-width: 0;
+      min-height: 0;
+      opacity: 1;
+      transition: opacity 520ms var(--ease-ios), transform 520ms var(--ease-ios), outline-color 280ms var(--ease-ios);
+    }
+
+    .feed.maximized {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .receiver.has-max .known-peers {
+      display: none;
+    }
+
+    .feed.maximized .feed-bar {
+      top: max(72px, calc(env(safe-area-inset-top) + 64px));
+    }
+
+    .feed.motion {
+      outline: 2px solid rgba(255, 43, 43, 0.65);
+      outline-offset: -2px;
+    }
+
+    .feed-bar {
+      position: absolute;
+      z-index: 4;
+      top: 8px;
+      left: 8px;
+      right: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .feed-label {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: var(--glass);
+      backdrop-filter: blur(34px) saturate(1.85) contrast(1.12);
+      -webkit-backdrop-filter: blur(34px) saturate(1.85) contrast(1.12);
+      border-radius: 24px;
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 12px;
+      line-height: 1.2;
+      padding: 7px 8px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .rename {
+      pointer-events: auto;
+      min-width: 42px;
+      min-height: 34px;
+      padding: 0 10px;
+      font-size: 12px;
+      background: transparent;
+    }
+
+    .remote-controls {
+      position: absolute;
+      z-index: 6;
+      left: 50%;
+      bottom: max(12px, env(safe-area-inset-bottom));
+      display: none;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      max-width: calc(100% - 20px);
+      overflow-x: auto;
+      transform: translateX(-50%);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: var(--glass);
+      backdrop-filter: blur(38px) saturate(1.9) contrast(1.14) brightness(1.08);
+      -webkit-backdrop-filter: blur(38px) saturate(1.9) contrast(1.14) brightness(1.08);
+      border-radius: 30px;
+      padding: 8px;
+      box-shadow: var(--shadow);
+      transition: opacity 420ms var(--ease-ios), transform 520ms var(--ease-ios);
+    }
+
+    .feed.maximized .remote-controls {
+      display: flex;
+    }
+
+    .feed:not(.maximized) .zone {
+      pointer-events: none;
+    }
+
+    .feed:not(.maximized) .zone-handle {
+      display: none;
+    }
+
+    .badge {
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: var(--muted);
+      font-size: 12px;
+      padding: 4px 8px;
+      white-space: nowrap;
+    }
+
+    .badge.ok {
+      color: var(--ok);
+    }
+
+    .badge.warn {
+      color: var(--warn);
+    }
+
+    .motion-flash {
+      position: fixed;
+      inset: 0;
+      z-index: 28;
+      background: #fff;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .motion-flash.hit {
+      animation: motionFlash 180ms ease-out;
+    }
+
+    @keyframes motionFlash {
+      0% { opacity: 0; }
+      18% { opacity: 0.92; }
+      100% { opacity: 0; }
+    }
+
+    .gallery-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: grid;
+      place-items: center;
+      padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+      background: rgba(0, 0, 0, 0.34);
+      backdrop-filter: blur(26px) saturate(1.55);
+      -webkit-backdrop-filter: blur(26px) saturate(1.55);
+    }
+
+    .gallery-shell {
+      position: relative;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 12px;
+      width: min(920px, 100%);
+      max-height: min(720px, 100%);
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 32px;
+      background: var(--glass);
+      backdrop-filter: blur(42px) saturate(1.95) contrast(1.16) brightness(1.08);
+      -webkit-backdrop-filter: blur(42px) saturate(1.95) contrast(1.16) brightness(1.08);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .gallery-head {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      gap: 8px;
+      align-items: center;
+      padding: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .gallery-title {
+      min-width: 0;
+    }
+
+    .gallery-title strong {
+      display: block;
+      font-size: 18px;
+      line-height: 1.1;
+    }
+
+    .gallery-title span {
+      display: block;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .gallery-limit {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .gallery-limit input {
+      width: 58px;
+      min-height: 36px;
+      padding: 0 8px;
+      text-align: center;
+    }
+
+    .modal-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(0, 0, 0, 0.32);
+      backdrop-filter: blur(28px) saturate(1.65);
+      -webkit-backdrop-filter: blur(28px) saturate(1.65);
+    }
+
+    .modal-card {
+      position: relative;
+      display: grid;
+      gap: 10px;
+      width: min(360px, 100%);
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 30px;
+      padding: 14px;
+      background: var(--glass);
+      backdrop-filter: blur(40px) saturate(1.9) contrast(1.12);
+      -webkit-backdrop-filter: blur(40px) saturate(1.9) contrast(1.12);
+      box-shadow: var(--shadow);
+    }
+
+    .modal-card strong {
+      font-size: 18px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: end;
+      gap: 8px;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px;
+      padding: 12px;
+      overflow: auto;
+    }
+
+    .shot-card {
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.045);
+    }
+
+    .shot-card img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      background: #111;
+    }
+
+    .shot-meta {
+      display: grid;
+      gap: 2px;
+      padding: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.25;
+    }
+
+    .shot-meta strong {
+      overflow: hidden;
+      color: var(--fg);
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    @media (shape: round), (max-width: 420px) and (max-height: 420px) {
+      button {
+        min-height: 38px;
+        padding: 0 10px;
+      }
+
+      input[type="range"] {
+        width: min(112px, 44vw);
+      }
+
+      .home {
+        padding: 34px;
+      }
+
+      .brand h1 {
+        font-size: clamp(36px, 14vw, 52px);
+      }
+
+      .brand p {
+        display: none;
+      }
+
+      .home-actions {
+        gap: 10px;
+      }
+
+      .home-actions button {
+        min-height: 64px;
+        height: 21vmin;
+        border-radius: 999px;
+        justify-items: center;
+        padding: 0 20px;
+        text-align: center;
+      }
+
+      .home-actions button span {
+        font-size: clamp(22px, 10vw, 34px);
+      }
+
+      .home-actions button small {
+        display: none;
+      }
+
+      .overlay,
+      .remote-controls {
+        backdrop-filter: blur(22px) saturate(1.65) contrast(1.08);
+        -webkit-backdrop-filter: blur(22px) saturate(1.65) contrast(1.08);
+        gap: 5px;
+        padding: 6px;
+        font-size: 11px;
+      }
+
+      .top-left,
+      .top-right {
+        top: 18px;
+      }
+
+      .top-left {
+        left: 28px;
+      }
+
+      .top-right {
+        right: 28px;
+      }
+
+      .bottom-center,
+      .remote-controls {
+        bottom: 22px;
+        max-width: calc(100% - 58px);
+      }
+
+      .receiver-bar {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 22px 32px 8px;
+      }
+
+      .code-field {
+        grid-column: 1 / -1;
+        order: 3;
+      }
+
+      .receiver-bar input {
+        height: 46px;
+      }
+
+      .gallery-shell {
+        width: min(100%, 330px);
+        max-height: 88vh;
+        border-radius: 18px;
+      }
+
+      .gallery-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .stealth-overlay {
+      position: fixed;
+      inset: 0;
+      background: #000000 !important;
+      z-index: 9999999;
+      cursor: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.28);
+      font-size: 14px;
+      text-align: center;
+      user-select: none;
+      touch-action: none;
+      font-family: inherit;
+      transition: opacity 350ms ease;
+    }
+
+    .stealth-overlay.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .stealth-hint {
+      max-width: 80%;
+      line-height: 1.5;
+      padding: 24px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      animation: fadeOutHint 3s forwards ease-in-out;
+      pointer-events: none;
+    }
+
+    @keyframes fadeOutHint {
+      0% { opacity: 1; transform: scale(1); }
+      75% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0.96); }
+    }
+
+    .feed-stats-overlay {
+      position: absolute;
+      top: max(10px, env(safe-area-inset-top));
+      left: max(10px, env(safe-area-inset-left));
+      background: rgba(10, 10, 10, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-size: 10px;
+      font-family: monospace;
+      color: rgba(255, 255, 255, 0.85);
+      z-index: 3;
+      pointer-events: none;
+      line-height: 1.4;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+  </style>
+</head>
+<body>
+  <main id="app" aria-live="polite"></main>
+  <script src="https://cdn.jsdelivr.net/npm/mqtt@5.15.1/dist/mqtt.min.js"></script>
+  <script>
+    (() => {
+      "use strict";
+
+      const BROKER_URL = "wss://broker.hivemq.com:8884/mqtt";
+      const SIGNAL_PREFIX = "heat/v1";
+      const SIGNAL_VERSION = 1;
+      const CODE_RE = /^[A-Z0-9]{3}$/;
+      const DATA_CHANNEL = "heat-control";
+      const RTC_CONFIG = {
+        iceServers: [
+          { urls: ["stun:stun.l.google.com:19302", "stun:stun.cloudflare.com:3478"] },
+          {
+            urls: [
+              "turn:openrelay.metered.ca:80",
+              "turn:openrelay.metered.ca:443",
+              "turn:openrelay.metered.ca:443?transport=tcp",
+              "turns:openrelay.metered.ca:443?transport=tcp"
+            ],
+            username: "openrelayproject",
+            credential: "openrelayproject"
+          }
+        ],
+        iceCandidatePoolSize: 6,
+        bundlePolicy: "max-bundle",
+        rtcpMuxPolicy: "require"
+      };
+      const STORE = {
+        deviceName: "heat.deviceName",
+        aliases: "heat.aliases",
+        lastCodes: "heat.lastCodes",
+        gallery: "heat.gallery",
+        settings: "heat.settings",
+        knownPeers: "heat.knownPeers"
+      };
+      const GALLERY_LIMIT_DEFAULT = 10;
+      const CAPTURE_MAX_EDGE = 360;
+      const CAPTURE_QUALITY = 0.56;
+      const DEFAULT_ZONE = { x: 0.28, y: 0.32, w: 0.38, h: 0.3, shape: "rect" };
+      const ZONE_HANDLES = ["sw"];
+
+      const app = document.getElementById("app");
+      let activeMode = null;
+      let wakeLockInstance = null;
+
+      async function requestWakeLock() {
+        try {
+          if ("wakeLock" in navigator) {
+            wakeLockInstance = await navigator.wakeLock.request("screen");
+            console.log("Wake Lock active");
+          }
+        } catch (err) {
+          console.warn("Wake Lock fail:", err);
+        }
+      }
+
+      function releaseWakeLock() {
+        try {
+          if (wakeLockInstance) {
+            wakeLockInstance.release().then(() => {
+              wakeLockInstance = null;
+              console.log("Wake Lock released");
+            });
+          }
+        } catch (err) {
+          console.warn("Wake Lock release fail:", err);
+        }
+      }
+
+      function enterStealthMode() {
+        requestWakeLock();
+        const overlay = document.createElement("div");
+        overlay.className = "stealth-overlay";
+        overlay.innerHTML = `
+          <div class="stealth-hint">
+            <strong style="color:#ff2b2b;font-size:16px;">Stealth Saver Mode Active</strong><br><br>
+            Screen remains black to conserve phone battery.<br>
+            Camera feeds and motion alerts continue running.<br><br>
+            <span style="font-size:12px;opacity:0.6;">Tap anywhere once to wake screen</span>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const exitStealth = () => {
+          releaseWakeLock();
+          overlay.classList.add("fade-out");
+          overlay.addEventListener("transitionend", () => {
+            safeRemove(overlay);
+          });
+        };
+
+        overlay.addEventListener("click", exitStealth);
+        overlay.addEventListener("touchstart", (e) => {
+          e.preventDefault();
+          exitStealth();
+        }, { passive: false });
+      }
+
+      const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+      const now = () => Date.now();
+      const sleep = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+      function randomId(length) {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        const bytes = new Uint8Array(length);
+        crypto.getRandomValues(bytes);
+        return Array.from(bytes, (byte) => chars[byte % chars.length]).join("");
+      }
+
+      function makeCode() {
+        return randomId(3);
+      }
+
+      function normalizeCodes(value) {
+        return String(value || "")
+          .toUpperCase()
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean);
+      }
+
+      function validateCodes(codes) {
+        const unique = Array.from(new Set(codes));
+        if (unique.length > 4) return { ok: false, message: "Max 4 codes" };
+        const bad = unique.find((code) => !CODE_RE.test(code));
+        if (bad) return { ok: false, message: "Bad code " + bad };
+        return { ok: true, codes: unique };
+      }
+
+      function loadJson(key, fallback) {
+        try {
+          const raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : fallback;
+        } catch {
+          return fallback;
+        }
+      }
+
+      function saveJson(key, value) {
+        try {
+          localStorage.setItem(key, JSON.stringify(value));
+        } catch {
+          // Storage can fail in private contexts. App still runs.
+        }
+      }
+
+      function defaultSettings() {
+        return {
+          galleryLimit: GALLERY_LIMIT_DEFAULT,
+          sender: {
+            sensitivity: 55,
+            zone: { ...DEFAULT_ZONE },
+            motionEnabled: true
+          },
+          receiver: {
+            motionEnabled: true,
+            peerZones: {},
+            peerSensitivity: {}
+          }
+        };
+      }
+
+      function loadSettings() {
+        const saved = loadJson(STORE.settings, {});
+        const base = defaultSettings();
+        return {
+          ...base,
+          ...saved,
+          sender: { ...base.sender, ...(saved.sender || {}) },
+          receiver: { ...base.receiver, ...(saved.receiver || {}) }
+        };
+      }
+
+      function updateSettings(mutator) {
+        const settings = loadSettings();
+        mutator(settings);
+        settings.galleryLimit = clamp(Number(settings.galleryLimit) || GALLERY_LIMIT_DEFAULT, 1, 50);
+        saveJson(STORE.settings, settings);
+        return settings;
+      }
+
+      function getGalleryLimit() {
+        return clamp(Number(loadSettings().galleryLimit) || GALLERY_LIMIT_DEFAULT, 1, 50);
+      }
+
+      function galleryKey(scope = "shared") {
+        return `${STORE.gallery}.${String(scope).replace(/[^a-z0-9_-]/gi, "_")}`;
+      }
+
+      function readKnownPeers() {
+        return loadJson(STORE.knownPeers, {});
+      }
+
+      function writeKnownPeers(peers) {
+        saveJson(STORE.knownPeers, peers || {});
+      }
+
+      function rememberKnownPeer(code, data = {}) {
+        if (!CODE_RE.test(code || "")) return readKnownPeers();
+        const peers = readKnownPeers();
+        peers[code] = {
+          ...(peers[code] || {}),
+          code,
+          deviceName: data.deviceName || peers[code]?.deviceName || code,
+          lastSeen: data.lastSeen || peers[code]?.lastSeen || 0
+        };
+        writeKnownPeers(peers);
+        return peers;
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        })[char]);
+      }
+
+      function safeRemove(element) {
+        try {
+          if (element && element.parentNode) element.parentNode.removeChild(element);
+        } catch {
+          // DOM may already be moved during blur/click transitions.
+        }
+      }
+
+      function readGallery(scope = "shared") {
+        const scoped = loadJson(galleryKey(scope), null);
+        if (Array.isArray(scoped)) return scoped;
+        return loadJson(STORE.gallery, []);
+      }
+
+      function saveGallery(items, scope = "shared") {
+        let next = Array.isArray(items) ? items.slice(0, getGalleryLimit()) : [];
+        try {
+          localStorage.setItem(galleryKey(scope), JSON.stringify(next));
+        } catch {
+          next = next.slice(0, Math.max(4, Math.floor(next.length / 2)));
+          try {
+            localStorage.setItem(galleryKey(scope), JSON.stringify(next));
+          } catch {
+            // Storage full. Gallery becomes session-only.
+          }
+        }
+        return next;
+      }
+
+      function addGalleryItem(capture, scope = "shared") {
+        if (!capture || !capture.dataUrl) return readGallery(scope);
+        const item = {
+          id: capture.id || randomId(10),
+          code: capture.code || "",
+          deviceName: capture.deviceName || "Camera",
+          ts: capture.ts || now(),
+          score: Number(capture.score) || 0,
+          dataUrl: capture.dataUrl
+        };
+        const existing = readGallery(scope).filter((entry) => entry.id !== item.id);
+        return saveGallery([item, ...existing], scope);
+      }
+
+      function formatShotTime(ts) {
+        try {
+          return new Date(ts).toLocaleString([], {
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+          });
+        } catch {
+          return "";
+        }
+      }
+
+      function captureVideoFrame(video, meta = {}) {
+        if (!video || !video.videoWidth || !video.videoHeight) return null;
+        const scale = Math.min(1, CAPTURE_MAX_EDGE / Math.max(video.videoWidth, video.videoHeight));
+        const width = Math.max(1, Math.round(video.videoWidth * scale));
+        const height = Math.max(1, Math.round(video.videoHeight * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d", { alpha: false });
+        if (!ctx) return null;
+        ctx.drawImage(video, 0, 0, width, height);
+        return {
+          id: meta.id || randomId(12),
+          code: meta.code || "",
+          deviceName: meta.deviceName || "Camera",
+          ts: meta.ts || now(),
+          score: Number(meta.score) || 0,
+          dataUrl: canvas.toDataURL("image/jpeg", CAPTURE_QUALITY)
+        };
+      }
+
+      function openGallery(title = "Motion Gallery", scope = "shared") {
+        const items = readGallery(scope);
+        const limit = getGalleryLimit();
+        const panel = document.createElement("div");
+        panel.className = "gallery-panel";
+        panel.innerHTML = `
+          <section class="gallery-shell" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}">
+            <div class="gallery-head">
+              <div class="gallery-title">
+                <strong>${escapeHtml(title)}</strong>
+                <span>Motion photos save automatically. Newest first. Stored only on this device.</span>
+              </div>
+              <label class="gallery-limit">Limit
+                <input class="gallery-limit-input" type="number" min="1" max="50" value="${limit}">
+              </label>
+              <button class="clear-gallery" type="button">Clear</button>
+              <button class="close-gallery" type="button">Close</button>
+            </div>
+            <div class="gallery-grid">
+              ${items.length ? items.map((item) => `
+                <article class="shot-card">
+                  <img src="${escapeHtml(item.dataUrl)}" alt="Motion photo from ${escapeHtml(item.deviceName)}">
+                  <div class="shot-meta">
+                    <strong>${escapeHtml(item.deviceName)} ${escapeHtml(item.code)}</strong>
+                    <span>${escapeHtml(formatShotTime(item.ts))}</span>
+                    <span>Motion score ${escapeHtml(Math.round((item.score || 0) * 10) / 10)}</span>
+                  </div>
+                </article>
+              `).join("") : `<div class="empty">No motion photos yet. When motion triggers, Heat captures a tiny compressed JPEG and saves it here.</div>`}
+            </div>
+          </section>
+        `;
+        const close = () => {
+          safeRemove(panel);
+        };
+        panel.addEventListener("click", (event) => {
+          if (event.target === panel || event.target.closest(".close-gallery")) close();
+          if (event.target.closest(".clear-gallery")) {
+            saveGallery([], scope);
+            close();
+            openGallery(title, scope);
+          }
+        });
+        panel.querySelector(".gallery-limit-input")?.addEventListener("change", (event) => {
+          const limitValue = clamp(Number(event.target.value) || GALLERY_LIMIT_DEFAULT, 1, 50);
+          updateSettings((settings) => { settings.galleryLimit = limitValue; });
+          saveGallery(readGallery(scope), scope);
+          event.target.value = String(limitValue);
+        });
+        document.body.appendChild(panel);
+      }
+
+      function askAlias(current, code, onSave) {
+        const panel = document.createElement("div");
+        panel.className = "modal-panel";
+        panel.innerHTML = `
+          <form class="modal-card">
+            <strong>Rename Device</strong>
+            <input class="alias-input" autocomplete="off" maxlength="40" value="${escapeHtml(current || code)}" aria-label="Device name">
+            <div class="modal-actions">
+              <button class="cancel-alias" type="button">Cancel</button>
+              <button type="submit">Save</button>
+            </div>
+          </form>
+        `;
+        const input = panel.querySelector(".alias-input");
+        const close = () => {
+          safeRemove(panel);
+        };
+        panel.querySelector(".cancel-alias").addEventListener("click", close);
+        panel.addEventListener("click", (event) => {
+          if (event.target === panel) close();
+        });
+        panel.querySelector("form").addEventListener("submit", (event) => {
+          event.preventDefault();
+          onSave(input.value.trim().slice(0, 40));
+          close();
+        });
+        document.body.appendChild(panel);
+        input.focus();
+        input.select();
+      }
+
+      function detectDeviceBase() {
+        const ua = navigator.userAgent || "";
+        if (/Android/i.test(ua)) return "Android";
+        if (/iPad|iPhone|iPod/i.test(ua)) return "iOS";
+        if (/Windows/i.test(ua)) return "Windows";
+        if (/Macintosh|Mac OS/i.test(ua)) return "Mac";
+        if (/Linux/i.test(ua)) return "Linux";
+        return "Device";
+      }
+
+      function getDeviceName() {
+        let name = localStorage.getItem(STORE.deviceName);
+        if (!name) {
+          name = detectDeviceBase() + "-" + String(Math.floor(100 + Math.random() * 900));
+          try {
+            localStorage.setItem(STORE.deviceName, name);
+          } catch {
+            // Non-fatal. Runtime id still works.
+          }
+        }
+        return name;
+      }
+
+      function setHtml(markup) {
+        app.innerHTML = markup;
+      }
+
+      function stopActiveMode() {
+        if (activeMode && typeof activeMode.close === "function") {
+          activeMode.close();
+        }
+        activeMode = null;
+      }
+
+      function showHome() {
+        stopActiveMode();
+        setHtml(`
+          <section class="screen home">
+            <div class="brand">
+              <h1>Heat</h1>
+              <p>Live camera watch with WebRTC video, motion alerts, remote controls, and automatic photo gallery.</p>
+            </div>
+            <div class="home-actions">
+              <button id="senderBtn" type="button">
+                <span>Sender</span>
+                <small>Share this camera. Show code. Detect motion.</small>
+              </button>
+              <button id="receiverBtn" type="button">
+                <span>Receiver</span>
+                <small>Watch codes. Control camera. Save alerts.</small>
+              </button>
+            </div>
+          </section>
+        `);
+        document.getElementById("senderBtn").addEventListener("click", () => startSender());
+        document.getElementById("receiverBtn").addEventListener("click", () => startReceiver());
+      }
+
+      function topicFor(code) {
+        return `${SIGNAL_PREFIX}/${code}/signal`;
+      }
+
+      function codeFromTopic(topic) {
+        const parts = String(topic || "").split("/");
+        return parts.length >= 4 ? parts[2] : "";
+      }
+
+      class MqttBus {
+        constructor(clientId, onSignal, onStatus) {
+          this.clientId = clientId;
+          this.onSignal = onSignal;
+          this.onStatus = onStatus;
+          this.connected = false;
+          this.closed = false;
+          this.topics = new Set();
+          this.waiters = [];
+          this.client = null;
+          this.connect();
+        }
+
+        connect() {
+          if (!window.mqtt) {
+            this.onStatus("mqtt.js load failed", true);
+            return;
+          }
+          this.client = window.mqtt.connect(BROKER_URL, {
+            clientId: this.clientId,
+            clean: true,
+            keepalive: 20,
+            reconnectPeriod: 1500,
+            connectTimeout: 9000,
+            resubscribe: true,
+            protocolVersion: 4
+          });
+
+          this.client.on("connect", () => {
+            if (this.closed) return;
+            this.connected = true;
+            this.onStatus("MQTT connected");
+            for (const topic of this.topics) this.subscribe(topic).catch(() => {});
+            const waiters = this.waiters.splice(0);
+            for (const waiter of waiters) waiter.resolve();
+          });
+
+          this.client.on("reconnect", () => {
+            if (!this.closed) this.onStatus("MQTT reconnecting");
+          });
+
+          this.client.on("offline", () => {
+            if (!this.closed) {
+              this.connected = false;
+              this.onStatus("MQTT offline", true);
+            }
+          });
+
+          this.client.on("close", () => {
+            if (!this.closed) {
+              this.connected = false;
+              this.onStatus("MQTT closed", true);
+            }
+          });
+
+          this.client.on("error", (error) => {
+            if (!this.closed) this.onStatus("MQTT " + cleanError(error), true);
+          });
+
+          this.client.on("message", (topic, payload) => {
+            if (this.closed) return;
+            let message;
+            try {
+              message = JSON.parse(payload.toString());
+            } catch {
+              return;
+            }
+            if (!message || message.v !== SIGNAL_VERSION) return;
+            this.onSignal(topic, message);
+          });
+        }
+
+        ensureConnected(timeoutMs = 10000) {
+          if (this.connected) return Promise.resolve();
+          if (!this.client) return Promise.reject(new Error("MQTT unavailable"));
+          return new Promise((resolve, reject) => {
+            const timeout = window.setTimeout(() => {
+              this.waiters = this.waiters.filter((waiter) => waiter.resolve !== resolve);
+              reject(new Error("MQTT timeout"));
+            }, timeoutMs);
+            this.waiters.push({
+              resolve: () => {
+                window.clearTimeout(timeout);
+                resolve();
+              },
+              reject
+            });
+          });
+        }
+
+        async subscribe(topic) {
+          this.topics.add(topic);
+          await this.ensureConnected();
+          if (this.closed || !this.client) return;
+          await new Promise((resolve, reject) => {
+            this.client.subscribe(topic, { qos: 0 }, (error) => {
+              if (error) reject(error);
+              else resolve();
+            });
+          });
+        }
+
+        async publish(code, message) {
+          await this.ensureConnected();
+          if (this.closed || !this.client) return;
+          const topic = topicFor(code);
+          const payload = JSON.stringify({
+            v: SIGNAL_VERSION,
+            ts: now(),
+            ...message
+          });
+          this.client.publish(topic, payload, { qos: 0, retain: false });
+        }
+
+        close() {
+          this.closed = true;
+          this.connected = false;
+          for (const waiter of this.waiters.splice(0)) waiter.reject?.(new Error("MQTT closed"));
+          if (this.client) {
+            try {
+              this.client.end(true);
+            } catch {
+              // Best effort.
+            }
+          }
+        }
+      }
+
+      function cleanError(error) {
+        return error && error.message ? error.message : String(error || "error");
+      }
+
+      function makePeerConnection() {
+        return new RTCPeerConnection(RTC_CONFIG);
+      }
+
+      function preferH264(pc) {
+        const caps = RTCRtpReceiver.getCapabilities?.("video");
+        if (!caps || !Array.isArray(caps.codecs)) return;
+        const h264 = caps.codecs.filter((codec) => /video\/h264/i.test(codec.mimeType));
+        if (!h264.length) return;
+        const rest = caps.codecs.filter((codec) => !/video\/h264/i.test(codec.mimeType));
+        const preferred = [...h264, ...rest];
+        for (const transceiver of pc.getTransceivers()) {
+          const isVideo =
+            transceiver.sender?.track?.kind === "video" ||
+            transceiver.receiver?.track?.kind === "video" ||
+            transceiver.mid === null;
+          if (!isVideo || !transceiver.setCodecPreferences) continue;
+          try {
+            transceiver.setCodecPreferences(preferred);
+          } catch {
+            // Browser may reject codec reshuffle. Negotiation still works.
+          }
+        }
+      }
+
+      async function detectVideoCodec(pc, direction) {
+        try {
+          const stats = await pc.getStats();
+          const codecs = new Map();
+          stats.forEach((report) => {
+            if (report.type === "codec") codecs.set(report.id, report.mimeType || report.codecType || "");
+          });
+          let found = "";
+          stats.forEach((report) => {
+            const typeOk = direction === "out"
+              ? report.type === "outbound-rtp"
+              : report.type === "inbound-rtp";
+            if (typeOk && (report.kind === "video" || report.mediaType === "video")) {
+              found = codecs.get(report.codecId) || found;
+            }
+          });
+          return found ? found.replace(/^video\//i, "").toUpperCase() : "";
+        } catch {
+          return "";
+        }
+      }
+
+      function sendData(channel, payload) {
+        if (!channel || channel.readyState !== "open") return false;
+        try {
+          channel.send(JSON.stringify({ ts: now(), ...payload }));
+          return true;
+        } catch {
+          return false;
+        }
+      }
+
+      function createStatusSetter(element) {
+        let timer = 0;
+        return (message, isError = false, hold = false) => {
+          if (!element) return;
+          element.textContent = message || "";
+          element.classList.toggle("error", !!isError);
+          element.classList.toggle("hidden", !message);
+          window.clearTimeout(timer);
+          if (message && !hold) {
+            timer = window.setTimeout(() => element.classList.add("hidden"), isError ? 5000 : 2500);
+          }
+        };
+      }
+
+      function getDisplayedVideoRect(video) {
+        const container = video.closest(".video-stage,.feed");
+        const box = (container || video).getBoundingClientRect();
+        const videoWidth = video.videoWidth || box.width || 1;
+        const videoHeight = video.videoHeight || box.height || 1;
+        const boxRatio = box.width / Math.max(1, box.height);
+        const videoRatio = videoWidth / Math.max(1, videoHeight);
+        let width = box.width;
+        let height = box.height;
+        let left = box.left;
+        let top = box.top;
+        if (boxRatio > videoRatio) {
+          width = box.height * videoRatio;
+          left = box.left + (box.width - width) / 2;
+        } else {
+          height = box.width / videoRatio;
+          top = box.top + (box.height - height) / 2;
+        }
+        return { left, top, width, height, min: Math.min(width, height) };
+      }
+
+      function normalizeZone(zone, rect) {
+        const source = zone || DEFAULT_ZONE;
+        const num = (value, fallback) => {
+          const next = Number(value);
+          return Number.isFinite(next) ? next : fallback;
+        };
+        const fallbackSize = clamp(num(source.size, 0.32), 0.06, 0.96);
+        const fallbackW = (fallbackSize * rect.min) / Math.max(1, rect.width);
+        const fallbackH = (fallbackSize * rect.min) / Math.max(1, rect.height);
+        const w = clamp(num(source.w, fallbackW || DEFAULT_ZONE.w), 0.04, 1);
+        const h = clamp(num(source.h, fallbackH || DEFAULT_ZONE.h), 0.04, 1);
+        const shape = source.shape === "ellipse" ? "ellipse" : "rect";
+        return {
+          x: clamp(num(source.x, DEFAULT_ZONE.x), 0, Math.max(0, 1 - w)),
+          y: clamp(num(source.y, DEFAULT_ZONE.y), 0, Math.max(0, 1 - h)),
+          w,
+          h,
+          shape
+        };
+      }
+
+      function positionZone(video, zoneEl, zone) {
+        if (!video || !zoneEl || zoneEl.isConnected === false) return;
+        const rect = getDisplayedVideoRect(video);
+        const safe = normalizeZone(zone, rect);
+        zoneEl.style.left = rect.left + safe.x * rect.width + "px";
+        zoneEl.style.top = rect.top + safe.y * rect.height + "px";
+        zoneEl.style.width = safe.w * rect.width + "px";
+        zoneEl.style.height = safe.h * rect.height + "px";
+        zoneEl.dataset.shape = safe.shape;
+      }
+
+      function ensureZoneHandles(zoneEl) {
+        if (!zoneEl || zoneEl.dataset.handlesReady === "1") return;
+        zoneEl.dataset.handlesReady = "1";
+        zoneEl.innerHTML = ZONE_HANDLES
+          .map((handle) => `<div class="zone-handle" data-handle="${handle}"></div>`)
+          .join("");
+      }
+
+      function wireZone(video, zoneEl, readZone, writeZone) {
+        ensureZoneHandles(zoneEl);
+        let gesture = null;
+        const startGesture = (event, mode, handle = "") => {
+          event.preventDefault();
+          event.stopPropagation();
+          const rect = getDisplayedVideoRect(video);
+          const zone = normalizeZone(readZone(), rect);
+          gesture = {
+            mode,
+            handle,
+            pointerId: event.pointerId,
+            rect,
+            zone,
+            startX: event.clientX,
+            startY: event.clientY
+          };
+          zoneEl.dataset.dragging = "1";
+          zoneEl.setPointerCapture?.(event.pointerId);
+        };
+
+        zoneEl.addEventListener("pointerdown", (event) => startGesture(event, "move"));
+        zoneEl.querySelectorAll(".zone-handle").forEach((handleEl) => {
+          handleEl.addEventListener("pointerdown", (event) => startGesture(event, "resize", handleEl.dataset.handle || "se"));
+        });
+
+        zoneEl.addEventListener("pointermove", (event) => {
+          if (!gesture || event.pointerId !== gesture.pointerId) return;
+          event.preventDefault();
+          event.stopPropagation();
+          const rect = getDisplayedVideoRect(video);
+          const dx = event.clientX - gesture.startX;
+          const dy = event.clientY - gesture.startY;
+          let next = { ...gesture.zone };
+          if (gesture.mode === "move") {
+            next.x = gesture.zone.x + dx / Math.max(1, rect.width);
+            next.y = gesture.zone.y + dy / Math.max(1, rect.height);
+          } else {
+            const nx = dx / Math.max(1, rect.width);
+            const ny = dy / Math.max(1, rect.height);
+            if (gesture.handle.includes("e")) next.w = gesture.zone.w + nx;
+            if (gesture.handle.includes("s")) next.h = gesture.zone.h + ny;
+            if (gesture.handle.includes("w")) {
+              next.x = gesture.zone.x + nx;
+              next.w = gesture.zone.w - nx;
+            }
+            if (gesture.handle.includes("n")) {
+              next.y = gesture.zone.y + ny;
+              next.h = gesture.zone.h - ny;
+            }
+          }
+          next = normalizeZone(next, rect);
+          writeZone(next);
+          positionZone(video, zoneEl, next);
+        });
+
+        const stopGesture = (event) => {
+          if (!gesture || event.pointerId !== gesture.pointerId) return;
+          event.preventDefault();
+          event.stopPropagation();
+          gesture = null;
+          window.setTimeout(() => {
+            if (!gesture) delete zoneEl.dataset.dragging;
+          }, 120);
+        };
+        zoneEl.addEventListener("pointerup", stopGesture);
+        zoneEl.addEventListener("pointercancel", stopGesture);
+      }
+
+      function getDeviceRotation() {
+        const angle = Number(screen.orientation?.angle ?? window.orientation ?? 0) || 0;
+        return ((angle % 360) + 360) % 360;
+      }
+
+      function normalizeRotation(value) {
+        const angle = ((Number(value) || 0) % 360 + 360) % 360;
+        if (angle >= 315 || angle < 45) return 0;
+        if (angle < 135) return 90;
+        if (angle < 225) return 180;
+        return 270;
+      }
+
+      function nightFromLuma(luma, noise) {
+        const darkness = clamp((92 - luma) / 78, 0, 1);
+        const noisy = clamp((noise - 18) / 44, 0, 1);
+        const level = clamp(darkness * 0.78 + noisy * 0.22, 0, 1);
+        return {
+          level,
+          brightness: 1 + level * 2.25,
+          contrast: 1.0,
+          saturate: 1 - level * 0.28,
+          luma: Math.round(luma * 10) / 10,
+          noise: Math.round(noise * 10) / 10
+        };
+      }
+
+      function applyVideoPresentation(video, rotation = 0, night = null) {
+        if (!video) return;
+        const angle = normalizeRotation(rotation);
+        const isQuarter = angle === 90 || angle === 270;
+        const filter = night && night.level > 0.04
+          ? `brightness(${night.brightness}) contrast(${night.contrast}) saturate(${night.saturate})`
+          : "";
+        video.classList.toggle("rotated-quarter", isQuarter);
+        if (isQuarter) {
+          const box = (video.closest(".video-stage,.feed") || video).getBoundingClientRect();
+          video.style.width = Math.max(1, box.height) + "px";
+          video.style.height = Math.max(1, box.width) + "px";
+        } else {
+          video.style.width = "";
+          video.style.height = "";
+        }
+        video.style.filter = filter;
+        video.style.transform = isQuarter
+          ? `translate(-50%, -50%) rotate(${-angle}deg)`
+          : `rotate(${-angle}deg)`;
+      }
+
+      function throttle(fn, ms) {
+        let last = 0;
+        let timer = 0;
+        let pendingArgs = null;
+        return (...args) => {
+          const elapsed = now() - last;
+          pendingArgs = args;
+          if (elapsed >= ms) {
+            last = now();
+            fn(...pendingArgs);
+            pendingArgs = null;
+            return;
+          }
+          window.clearTimeout(timer);
+          timer = window.setTimeout(() => {
+            last = now();
+            fn(...(pendingArgs || []));
+            pendingArgs = null;
+          }, ms - elapsed);
+        };
+      }
+
+      async function startSender() {
+        stopActiveMode();
+        activeMode = new SenderMode();
+        await activeMode.init();
+      }
+
+      async function startReceiver() {
+        stopActiveMode();
+        activeMode = new ReceiverMode();
+        await activeMode.init();
+      }
+
+      class SenderMode {
+        constructor() {
+          const settings = loadSettings();
+          this.code = makeCode();
+          this.deviceName = getDeviceName();
+          this.galleryScope = "sender-" + this.deviceName;
+          this.selfId = "sender-" + this.deviceName + "-" + randomId(4);
+          this.sessionPeers = new Map();
+          this.pendingCandidates = new Map();
+          this.zone = { ...DEFAULT_ZONE, ...(settings.sender.zone || {}) };
+          this.sensitivity = clamp(Number(settings.sender.sensitivity) || 55, 20, 100);
+          this.motionEnabled = settings.sender.motionEnabled !== false;
+          this.torchOn = false;
+          this.torchSupported = false;
+          this.rotation = getDeviceRotation();
+          this.night = nightFromLuma(160, 0);
+          this.lastNightConstraintAt = 0;
+          this.lastExposureAdjustedAt = 0;
+          this.closed = false;
+          this.devices = [];
+          this.deviceIndex = -1;
+          this.motionActive = false;
+          this.prevSample = null;
+          this.prevFrame = null;
+          this.motionScore = 0;
+          this.motionTimer = 0;
+          this.lastCaptureAt = 0;
+          this.heartbeatTimer = 0;
+          this.presenceTimer = 0;
+          this.resizeHandler = null;
+          this.orientationHandler = null;
+          this.saveSenderSettings = throttle(() => {
+            updateSettings((next) => {
+              next.sender.sensitivity = this.sensitivity;
+              next.sender.zone = this.zone;
+              next.sender.motionEnabled = this.motionEnabled;
+            });
+          }, 220);
+        }
+
+        async init() {
+          setHtml(`
+            <section class="screen sender">
+              <div class="video-stage">
+                <video id="senderVideo" autoplay playsinline muted></video>
+                <div id="senderZone" class="zone" aria-label="Motion detection zone"></div>
+                <div id="senderFlash" class="motion-flash"></div>
+                <div class="overlay top-left">
+                  <button id="senderBack" type="button">Back</button>
+                  <div>
+                    <div class="mini">Share code</div>
+                    <div class="code-pill">${this.code}</div>
+                  </div>
+                </div>
+                <div class="overlay top-right">
+                  <span id="senderPeers" class="badge">0 viewers</span>
+                  <span id="nightBadge" class="badge night-badge">Night auto</span>
+                </div>
+                <div class="overlay bottom-center">
+                  <button id="lensBtn" type="button">Lens</button>
+                  <button id="torchBtn" type="button" disabled>Flash</button>
+                  <button id="senderDetectBtn" type="button">${this.motionEnabled ? "Detection On" : "Detection Off"}</button>
+                  <button id="shapeBtn" type="button">Rect Zone</button>
+                  <button id="senderGallery" type="button">Gallery</button>
+                  <button id="senderStealthBtn" type="button" style="color: #ff9d9d; border-color: rgba(255, 43, 43, 0.25);">Stealth</button>
+                  <label class="range-label">Sensitivity
+                    <input id="sensitivity" type="range" min="20" max="100" value="${this.sensitivity}" aria-label="Sensitivity">
+                  </label>
+                </div>
+                <div id="senderStatus" class="status hidden"></div>
+              </div>
+            </section>
+          `);
+          this.video = document.getElementById("senderVideo");
+          this.zoneEl = document.getElementById("senderZone");
+          this.motionFlash = document.getElementById("senderFlash");
+          this.status = createStatusSetter(document.getElementById("senderStatus"));
+          this.peerBadge = document.getElementById("senderPeers");
+          this.nightBadge = document.getElementById("nightBadge");
+          this.lensBtn = document.getElementById("lensBtn");
+          this.torchBtn = document.getElementById("torchBtn");
+          this.detectBtn = document.getElementById("senderDetectBtn");
+          this.shapeBtn = document.getElementById("shapeBtn");
+          this.sensitivityEl = document.getElementById("sensitivity");
+          this.shapeBtn.textContent = this.zone.shape === "ellipse" ? "Oval Zone" : "Rect Zone";
+
+          document.getElementById("senderBack").addEventListener("click", showHome);
+          document.getElementById("senderGallery").addEventListener("click", () => openGallery("Sender Gallery", this.galleryScope));
+          document.getElementById("senderStealthBtn").addEventListener("click", () => enterStealthMode());
+          this.lensBtn.addEventListener("click", () => this.switchCamera());
+          this.torchBtn.addEventListener("click", () => this.setTorch(!this.torchOn));
+          this.detectBtn.addEventListener("click", () => this.setMotionEnabled(!this.motionEnabled));
+          this.shapeBtn.addEventListener("click", () => this.toggleZoneShape());
+          this.sensitivityEl.addEventListener("input", () => {
+            this.sensitivity = Number(this.sensitivityEl.value);
+            this.saveSenderSettings();
+            this.broadcastState();
+          });
+          wireZone(this.video, this.zoneEl, () => this.zone, (zone) => {
+            this.zone = zone;
+            this.saveSenderSettings();
+            this.broadcastZone();
+          });
+          this.resizeHandler = () => {
+            this.applyPresentation();
+            positionZone(this.video, this.zoneEl, this.zone);
+          };
+          window.addEventListener("resize", this.resizeHandler);
+          this.video.addEventListener("loadedmetadata", this.resizeHandler);
+          this.orientationHandler = () => {
+            this.rotation = getDeviceRotation();
+            this.applyPresentation();
+            this.broadcastState();
+            positionZone(this.video, this.zoneEl, this.zone);
+          };
+          window.addEventListener("orientationchange", this.orientationHandler);
+          screen.orientation?.addEventListener?.("change", this.orientationHandler);
+
+          try {
+            await this.openCamera();
+            this.status("Camera ready");
+          } catch (error) {
+            this.status("Camera " + cleanError(error), true, true);
+            return;
+          }
+
+          this.bus = new MqttBus(
+            "heat_sender_" + this.code + "_" + randomId(6),
+            (topic, message) => this.onSignal(topic, message),
+            (message, isError) => this.status(message, isError)
+          );
+          try {
+            await this.bus.subscribe(topicFor(this.code));
+            this.status("Ready " + this.code);
+            this.publishPresence();
+            this.presenceTimer = window.setInterval(() => this.publishPresence(), 2000);
+          } catch (error) {
+            this.status("Signal " + cleanError(error), true, true);
+          }
+
+          this.startMotionLoop();
+          this.heartbeatTimer = window.setInterval(() => this.broadcastHeartbeat(), 1000);
+          positionZone(this.video, this.zoneEl, this.zone);
+        }
+
+        async openCamera(deviceId = "") {
+          const video = {
+            frameRate: { ideal: 60, max: 60 },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          };
+          if (deviceId) video.deviceId = { exact: deviceId };
+          else video.facingMode = { ideal: "environment" };
+
+          const newStream = await navigator.mediaDevices.getUserMedia({ audio: false, video });
+          const newTrack = newStream.getVideoTracks()[0];
+          if (!newTrack) throw new Error("No video track");
+
+          const oldStream = this.stream;
+          this.stream = newStream;
+          this.videoTrack = newTrack;
+          this.video.classList.add("fading");
+          this.video.srcObject = newStream;
+          await this.video.play().catch(() => {});
+          requestAnimationFrame(() => this.video.classList.remove("fading"));
+
+          await this.refreshDevices();
+          const settings = newTrack.getSettings ? newTrack.getSettings() : {};
+          this.deviceIndex = this.devices.findIndex((device) => device.deviceId === settings.deviceId);
+          this.updateTorchSupport();
+
+          for (const peer of this.sessionPeers.values()) {
+            const sender = peer.pc.getSenders().find((item) => item.track && item.track.kind === "video");
+            if (sender) await sender.replaceTrack(newTrack).catch(() => {});
+            this.sendState(peer);
+          }
+
+          if (oldStream) {
+            for (const track of oldStream.getTracks()) track.stop();
+          }
+          this.broadcastState();
+          positionZone(this.video, this.zoneEl, this.zone);
+          this.applyPresentation();
+        }
+
+        async refreshDevices() {
+          try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            this.devices = devices.filter((device) => device.kind === "videoinput");
+          } catch {
+            this.devices = [];
+          }
+        }
+
+        updateTorchSupport() {
+          const caps = this.videoTrack?.getCapabilities ? this.videoTrack.getCapabilities() : {};
+          this.torchSupported = !!caps.torch;
+          if (!this.torchSupported) this.torchOn = false;
+          this.torchBtn.disabled = !this.torchSupported;
+          this.torchBtn.textContent = this.torchOn ? "Flash On" : "Flash";
+        }
+
+        async switchCamera() {
+          await this.refreshDevices();
+          if (!this.devices.length) {
+            this.status("No lenses", true);
+            return;
+          }
+          const currentSettings = this.videoTrack?.getSettings ? this.videoTrack.getSettings() : {};
+          const currentIndex = this.devices.findIndex((device) => device.deviceId === currentSettings.deviceId);
+          const nextIndex = ((currentIndex >= 0 ? currentIndex : this.deviceIndex) + 1) % this.devices.length;
+          const nextDevice = this.devices[nextIndex];
+          this.deviceIndex = nextIndex;
+          this.torchOn = false;
+          try {
+            await this.openCamera(nextDevice.deviceId);
+            this.status("Lens switched");
+          } catch (error) {
+            this.status("Lens " + cleanError(error), true);
+          }
+        }
+
+        async setTorch(value) {
+          if (!this.videoTrack || !this.torchSupported) {
+            this.status("Flash unsupported", true);
+            return;
+          }
+          const wanted = !!value;
+          try {
+            await this.videoTrack.applyConstraints({ advanced: [{ torch: wanted }] });
+            this.torchOn = wanted;
+            this.updateTorchSupport();
+            this.broadcastState();
+          } catch (error) {
+            this.torchOn = false;
+            this.updateTorchSupport();
+            this.status("Flash " + cleanError(error), true);
+          }
+        }
+
+        publishPresence() {
+          this.bus?.publish(this.code, {
+            type: "presence",
+            from: this.selfId,
+            code: this.code,
+            deviceName: this.deviceName,
+            state: this.getCameraState()
+          }).catch(() => {});
+        }
+
+        setMotionEnabled(value) {
+          this.motionEnabled = !!value;
+          if (!this.motionEnabled && this.motionActive) {
+            this.motionActive = false;
+            this.zoneEl.classList.remove("motion");
+            for (const peer of this.sessionPeers.values()) {
+              sendData(peer.dc, { type: "motion", active: false, score: 0, zone: this.zone });
+            }
+          }
+          this.detectBtn.textContent = this.motionEnabled ? "Detection On" : "Detection Off";
+          this.saveSenderSettings();
+          this.broadcastState();
+          this.status(this.motionEnabled ? "Detection enabled" : "Detection disabled");
+        }
+
+        toggleZoneShape() {
+          this.zone = {
+            ...normalizeZone(this.zone, getDisplayedVideoRect(this.video)),
+            shape: this.zone.shape === "ellipse" ? "rect" : "ellipse"
+          };
+          this.shapeBtn.textContent = this.zone.shape === "ellipse" ? "Oval Zone" : "Rect Zone";
+          positionZone(this.video, this.zoneEl, this.zone);
+          this.saveSenderSettings();
+          this.broadcastZone();
+          this.broadcastState();
+        }
+
+        applyPresentation() {
+          applyVideoPresentation(this.video, this.rotation, this.night);
+          if (this.nightBadge) {
+            const level = Math.round((this.night?.level || 0) * 100);
+            this.nightBadge.textContent = level > 8 ? `Night ${level}%` : "Night auto";
+          }
+        }
+
+        onSignal(topic, message) {
+          if (this.closed || codeFromTopic(topic) !== this.code || message.from === this.selfId) return;
+          if (message.type === "offer" && message.sdp) {
+            this.answerOffer(message).catch((error) => this.status("Offer " + cleanError(error), true));
+            return;
+          }
+          if (message.type === "candidate" && message.candidate && message.session) {
+            const peer = this.sessionPeers.get(message.session);
+            if (peer) this.addIce(peer, message.candidate);
+            else {
+              const pending = this.pendingCandidates.get(message.session) || [];
+              pending.push(message.candidate);
+              this.pendingCandidates.set(message.session, pending);
+            }
+          }
+        }
+
+        async answerOffer(message) {
+          this.closePeer(message.session);
+          const pc = makePeerConnection();
+          const peer = {
+            pc,
+            dc: null,
+            session: message.session,
+            remoteId: message.from,
+            queuedCandidates: [],
+            state: "new"
+          };
+          this.sessionPeers.set(peer.session, peer);
+          this.updatePeerBadge();
+
+          pc.onicecandidate = (event) => {
+            if (event.candidate) {
+              this.bus.publish(this.code, {
+                type: "candidate",
+                from: this.selfId,
+                to: peer.remoteId,
+                session: peer.session,
+                candidate: event.candidate
+              }).catch(() => {});
+            }
+          };
+          pc.onconnectionstatechange = () => {
+            peer.state = pc.connectionState;
+            this.updatePeerBadge();
+            if (pc.connectionState === "failed") this.status("P2P failed. Trying relay.", true, true);
+            if (pc.connectionState === "connected") {
+              sleep(600).then(async () => {
+                const codec = await detectVideoCodec(pc, "out");
+                if (codec) this.status("P2P connected " + codec);
+              });
+            }
+          };
+          pc.oniceconnectionstatechange = () => {
+            if (pc.iceConnectionState === "failed") this.status("ICE failed. Relay required.", true, true);
+          };
+          pc.ondatachannel = (event) => this.bindDataChannel(peer, event.channel);
+
+          await pc.setRemoteDescription(new RTCSessionDescription(message.sdp));
+          const track = this.stream?.getVideoTracks()[0];
+          if (!track) throw new Error("No camera track");
+          pc.addTrack(track, this.stream);
+          preferH264(pc);
+          const queued = this.pendingCandidates.get(peer.session) || [];
+          this.pendingCandidates.delete(peer.session);
+          for (const candidate of queued) await this.addIce(peer, candidate);
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          await this.bus.publish(this.code, {
+            type: "answer",
+            from: this.selfId,
+            to: peer.remoteId,
+            session: peer.session,
+            sdp: pc.localDescription
+          });
+        }
+
+        bindDataChannel(peer, channel) {
+          peer.dc = channel;
+          channel.onopen = () => {
+            this.sendState(peer);
+            this.sendZone(peer);
+          };
+          channel.onmessage = (event) => this.onCommand(peer, event.data);
+          channel.onclose = () => this.updatePeerBadge();
+          channel.onerror = () => this.status("Data channel error", true);
+        }
+
+        async addIce(peer, candidate) {
+          try {
+            if (!peer.pc.remoteDescription) {
+              peer.queuedCandidates.push(candidate);
+              return;
+            }
+            await peer.pc.addIceCandidate(new RTCIceCandidate(candidate));
+          } catch {
+            // Stale candidate. Ignore.
+          }
+        }
+
+        onCommand(peer, raw) {
+          let command;
+          try {
+            command = JSON.parse(raw);
+          } catch {
+            return;
+          }
+          if (!command || typeof command.type !== "string") return;
+          if (command.type === "switchCamera") this.switchCamera();
+          if (command.type === "setTorch") this.setTorch(!!command.value);
+          if (command.type === "setSensitivity") {
+            this.sensitivity = clamp(Number(command.value) || this.sensitivity, 20, 100);
+            this.sensitivityEl.value = String(this.sensitivity);
+            this.saveSenderSettings();
+            this.broadcastState();
+          }
+          if (command.type === "setMotionEnabled") this.setMotionEnabled(command.value !== false);
+          if (command.type === "setZone" && command.zone) {
+            this.zone = normalizeZone(command.zone, getDisplayedVideoRect(this.video));
+            this.shapeBtn.textContent = this.zone.shape === "ellipse" ? "Oval Zone" : "Rect Zone";
+            positionZone(this.video, this.zoneEl, this.zone);
+            this.saveSenderSettings();
+            this.broadcastZone();
+          }
+        }
+
+        getCameraState() {
+          const settings = this.videoTrack?.getSettings ? this.videoTrack.getSettings() : {};
+          const label = this.devices[this.deviceIndex]?.label || this.videoTrack?.label || "Camera";
+          return {
+            type: "state",
+            deviceName: this.deviceName,
+            code: this.code,
+            lensLabel: label,
+            lensIndex: this.deviceIndex,
+            torchOn: this.torchOn,
+            torchSupported: this.torchSupported,
+            sensitivity: this.sensitivity,
+            motionEnabled: this.motionEnabled,
+            zone: this.zone,
+            rotation: this.rotation,
+            night: this.night,
+            width: settings.width || 0,
+            height: settings.height || 0,
+            frameRate: settings.frameRate || 0
+          };
+        }
+
+        sendState(peer) {
+          sendData(peer.dc, this.getCameraState());
+        }
+
+        broadcastState() {
+          this.updateTorchSupport();
+          for (const peer of this.sessionPeers.values()) this.sendState(peer);
+        }
+
+        sendZone(peer) {
+          sendData(peer.dc, { type: "zone", zone: this.zone });
+        }
+
+        broadcastZone() {
+          for (const peer of this.sessionPeers.values()) this.sendZone(peer);
+        }
+
+        broadcastHeartbeat() {
+          for (const peer of this.sessionPeers.values()) {
+            sendData(peer.dc, {
+              type: "heartbeat",
+              state: this.getCameraState(),
+              zone: this.zone
+            });
+          }
+        }
+
+        startMotionLoop() {
+          const canvas = document.createElement("canvas");
+          canvas.width = 72;
+          canvas.height = 72;
+          const ctx = canvas.getContext("2d", { willReadFrequently: true });
+          const tick = () => {
+            if (this.closed) return;
+            try {
+              this.sampleMotion(ctx, canvas);
+            } catch {
+              // Bad frame. Try next tick.
+            }
+            this.motionTimer = window.setTimeout(tick, 120);
+          };
+          tick();
+        }
+
+        sampleMotion(ctx, canvas) {
+          if (!ctx || !this.video.videoWidth || !this.video.videoHeight) return;
+          const width = this.video.videoWidth;
+          const height = this.video.videoHeight;
+          const zone = normalizeZone(this.zone, { width, height, min: Math.min(width, height), left: 0, top: 0 });
+          this.zone = zone;
+          const zoneWidth = clamp(zone.w * width, 8, width);
+          const zoneHeight = clamp(zone.h * height, 8, height);
+          const sx = clamp(zone.x * width, 0, Math.max(0, width - zoneWidth));
+          const sy = clamp(zone.y * height, 0, Math.max(0, height - zoneHeight));
+          ctx.drawImage(this.video, sx, sy, zoneWidth, zoneHeight, 0, 0, canvas.width, canvas.height);
+          const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+          
+          const cx = canvas.width / 2;
+          const cy = canvas.height / 2;
+          const rx = canvas.width / 2;
+          const ry = canvas.height / 2;
+          
+          const rawLumas = new Float32Array(canvas.width * canvas.height);
+          let total = 0;
+          let count = 0;
+          for (let index = 0; index < data.length; index += 4) {
+            const pixel = index / 4;
+            const px = pixel % canvas.width;
+            const py = Math.floor(pixel / canvas.width);
+            if (zone.shape === "ellipse") {
+              const ex = (px + 0.5 - cx) / Math.max(1, rx);
+              const ey = (py + 0.5 - cy) / Math.max(1, ry);
+              if (ex * ex + ey * ey > 1) continue;
+            }
+            const lum = data[index] * 0.299 + data[index + 1] * 0.587 + data[index + 2] * 0.114;
+            rawLumas[pixel] = lum;
+            total += lum;
+            count++;
+          }
+          
+          const avg = count ? total / count : 0;
+          const sensitivityNorm = (this.sensitivity - 20) / 80;
+          const pixelThresholdBase = 38 - sensitivityNorm * 22 + Math.min(18, (this.night?.noise || 0) * 0.25);
+          
+          const currentFrame = new Float32Array(canvas.width * canvas.height);
+          let noiseTotal = 0;
+          let motionPixels = 0;
+          let prevRelLum = 0;
+          let noiseCount = 0;
+          
+          const isSettling = (now() - (this.lastExposureAdjustedAt || 0)) < 2000;
+          
+          for (let index = 0; index < data.length; index += 4) {
+            const pixel = index / 4;
+            const px = pixel % canvas.width;
+            const py = Math.floor(pixel / canvas.width);
+            if (zone.shape === "ellipse") {
+              const ex = (px + 0.5 - cx) / Math.max(1, rx);
+              const ey = (py + 0.5 - cy) / Math.max(1, ry);
+              if (ex * ex + ey * ey > 1) continue;
+            }
+            const relLum = rawLumas[pixel] - avg;
+            currentFrame[pixel] = relLum;
+            
+            if (noiseCount) noiseTotal += Math.abs(relLum - prevRelLum);
+            
+            if (this.prevFrame && !isSettling) {
+              if (Math.abs(relLum - this.prevFrame[pixel]) > pixelThresholdBase) {
+                motionPixels++;
+              }
+            }
+            prevRelLum = relLum;
+            noiseCount++;
+          }
+          
+          const noise = noiseCount > 1 ? noiseTotal / (noiseCount - 1) : 0;
+          this.updateNightVision(avg, noise);
+          
+          if (this.prevSample == null || !this.prevFrame) {
+            this.prevSample = avg;
+            this.prevFrame = currentFrame;
+            return;
+          }
+          
+          this.prevSample = avg * 0.35 + this.prevSample * 0.65;
+          const pixelRatio = count ? motionPixels / count : 0;
+          const rawScore = pixelRatio * 118;
+          this.motionScore = this.motionScore * 0.62 + rawScore * 0.38;
+          this.prevFrame = currentFrame;
+          
+          if (!this.motionEnabled) {
+            if (this.motionActive) {
+              this.motionActive = false;
+              this.zoneEl.classList.remove("motion");
+              for (const peer of this.sessionPeers.values()) {
+                sendData(peer.dc, { type: "motion", active: false, score: 0, zone: this.zone });
+              }
+            }
+            return;
+          }
+          
+          const threshold = 11.5 - sensitivityNorm * 7;
+          const releaseThreshold = threshold * 0.52;
+          const active = this.motionActive ? this.motionScore > releaseThreshold : this.motionScore > threshold;
+          if (active !== this.motionActive) {
+            this.motionActive = active;
+            this.zoneEl.classList.toggle("motion", active);
+            if (active) this.flashMotion();
+            const capture = active ? this.captureMotion(this.motionScore) : null;
+            for (const peer of this.sessionPeers.values()) {
+              sendData(peer.dc, { type: "motion", active, score: Math.round(this.motionScore * 10) / 10, zone: this.zone, capture });
+            }
+          }
+        }
+
+        updateNightVision(luma, noise) {
+          const next = nightFromLuma(luma, noise);
+          const oldLevel = this.night?.level || 0;
+          const smoothLevel = oldLevel * 0.82 + next.level * 0.18;
+          this.night = {
+            ...next,
+            level: smoothLevel,
+            brightness: 1 + smoothLevel * 2.25,
+            contrast: 1.0,
+            saturate: 1 - smoothLevel * 0.28
+          };
+          this.applyPresentation();
+          if (Math.abs(this.night.level - oldLevel) > 0.06) this.broadcastState();
+          this.applyNightConstraints();
+        }
+
+        applyNightConstraints() {
+          if (!this.videoTrack?.getCapabilities || now() - this.lastNightConstraintAt < 2500) return;
+          this.lastNightConstraintAt = now();
+          const caps = this.videoTrack.getCapabilities();
+          const advanced = {};
+          const level = this.night?.level || 0;
+
+          if (level > 0.18) {
+            if (Array.isArray(caps.exposureMode) && caps.exposureMode.includes("manual")) {
+              advanced.exposureMode = "manual";
+              if (caps.exposureTime && typeof caps.exposureTime.max === "number") {
+                const min = Number(caps.exposureTime.min) || 0;
+                const max = Number(caps.exposureTime.max) || 0;
+                advanced.exposureTime = clamp(min + (max - min) * 0.85, min, max);
+              }
+              if (caps.iso && typeof caps.iso.max === "number") {
+                const min = Number(caps.iso.min) || 0;
+                const max = Number(caps.iso.max) || 0;
+                advanced.iso = clamp(min + (max - min) * 0.80, min, max);
+              }
+            } else if (Array.isArray(caps.exposureMode) && caps.exposureMode.includes("continuous")) {
+              advanced.exposureMode = "continuous";
+            }
+          } else {
+            if (Array.isArray(caps.exposureMode) && caps.exposureMode.includes("continuous")) {
+              advanced.exposureMode = "continuous";
+            }
+          }
+
+          if (caps.exposureCompensation && typeof caps.exposureCompensation.max === "number") {
+            const min = Number(caps.exposureCompensation.min) || 0;
+            const max = Number(caps.exposureCompensation.max) || 0;
+            advanced.exposureCompensation = clamp(min + (max - min) * level, min, max);
+          }
+
+          if (caps.brightness && typeof caps.brightness.max === "number") {
+            const min = Number(caps.brightness.min) || 0;
+            const max = Number(caps.brightness.max) || 0;
+            advanced.brightness = clamp(min + (max - min) * level, min, max);
+          }
+
+          if (!Object.keys(advanced).length) return;
+          this.videoTrack.applyConstraints({ advanced: [advanced] })
+            .then(() => {
+              console.log("Hardware camera night constraints applied successfully:", advanced);
+              this.lastExposureAdjustedAt = now();
+            })
+            .catch((err) => {
+              console.warn("Failed to apply hardware camera constraints:", err);
+            });
+        }
+
+        flashMotion() {
+          if (!this.motionFlash) return;
+          this.motionFlash.classList.remove("hit");
+          void this.motionFlash.offsetWidth;
+          this.motionFlash.classList.add("hit");
+        }
+
+        captureMotion(score) {
+          const stamp = now();
+          if (stamp - this.lastCaptureAt < 3500) return null;
+          this.lastCaptureAt = stamp;
+          const capture = captureVideoFrame(this.video, {
+            code: this.code,
+            deviceName: this.deviceName,
+            ts: stamp,
+            score
+          });
+          if (!capture) return null;
+          addGalleryItem(capture, this.galleryScope);
+          return capture;
+        }
+
+        updatePeerBadge() {
+          const peers = Array.from(this.sessionPeers.values());
+          const connected = peers.filter((peer) => peer.pc.connectionState === "connected").length;
+          this.peerBadge.textContent = `${connected}/${peers.length} viewers`;
+        }
+
+        closePeer(session) {
+          const peer = this.sessionPeers.get(session);
+          if (!peer) return;
+          try { peer.dc?.close(); } catch {}
+          try { peer.pc?.close(); } catch {}
+          this.sessionPeers.delete(session);
+          this.updatePeerBadge();
+        }
+
+        close() {
+          this.closed = true;
+          window.clearTimeout(this.motionTimer);
+          window.clearInterval(this.heartbeatTimer);
+          window.clearInterval(this.presenceTimer);
+          if (this.resizeHandler) window.removeEventListener("resize", this.resizeHandler);
+          if (this.orientationHandler) {
+            window.removeEventListener("orientationchange", this.orientationHandler);
+            screen.orientation?.removeEventListener?.("change", this.orientationHandler);
+          }
+          for (const session of Array.from(this.sessionPeers.keys())) this.closePeer(session);
+          this.bus?.close();
+          if (this.stream) {
+            for (const track of this.stream.getTracks()) track.stop();
+          }
+        }
+      }
+
+      class ReceiverMode {
+        constructor() {
+          const settings = loadSettings();
+          this.deviceName = getDeviceName();
+          this.selfId = "receiver-" + this.deviceName + "-" + randomId(5);
+          this.peers = new Map();
+          this.aliases = loadJson(STORE.aliases, {});
+          this.knownPeers = readKnownPeers();
+          this.onlineUntil = new Map();
+          this.motionEnabled = settings.receiver.motionEnabled !== false;
+          this.maximizedCode = "";
+          this.closed = false;
+          this.resizeHandler = null;
+          this.knownTimer = 0;
+          this.statsTimer = 0;
+        }
+
+        async init() {
+          setHtml(`
+            <section class="screen receiver">
+              <div class="receiver-bar">
+                <button id="receiverBack" type="button">Back</button>
+                <div id="codeField" class="code-field">
+                  <span class="code-help">Enter Sender codes, separated by spaces. Example: 5J6 SJF</span>
+                  <input id="codesInput" inputmode="latin" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Sender codes">
+                </div>
+                <button id="connectBtn" type="button">Connect</button>
+                <button id="receiverGallery" type="button">Gallery</button>
+                <button id="detectAllBtn" type="button">${this.motionEnabled ? "Detect On" : "Detect Off"}</button>
+                <button id="receiverStealthBtn" type="button" style="color: #ff9d9d; border-color: rgba(255, 43, 43, 0.25);">Stealth</button>
+                <button id="disconnectAllBtn" type="button">Disconnect</button>
+              </div>
+              <div id="knownPeers" class="known-peers hidden"></div>
+              <div id="receiverGrid" class="grid count-0">
+                <div class="empty">Receiver watches Sender codes. Tap feed for full screen. Motion flashes, vibrates, and saves photo.</div>
+              </div>
+              <div id="motionFlash" class="motion-flash"></div>
+              <div id="receiverStatus" class="status hidden"></div>
+            </section>
+          `);
+          this.screen = document.querySelector(".receiver");
+          this.grid = document.getElementById("receiverGrid");
+          this.input = document.getElementById("codesInput");
+          this.codeField = document.getElementById("codeField");
+          this.knownEl = document.getElementById("knownPeers");
+          this.motionFlash = document.getElementById("motionFlash");
+          this.status = createStatusSetter(document.getElementById("receiverStatus"));
+          document.getElementById("receiverBack").addEventListener("click", showHome);
+          document.getElementById("receiverGallery").addEventListener("click", () => openGallery("Receiver Gallery", "receiver-all"));
+          document.getElementById("detectAllBtn").addEventListener("click", () => this.setMotionEnabledAll(!this.motionEnabled));
+          document.getElementById("receiverStealthBtn").addEventListener("click", () => enterStealthMode());
+          document.getElementById("disconnectAllBtn").addEventListener("click", () => this.disconnectAll());
+          document.getElementById("connectBtn").addEventListener("click", () => this.applyCodesFromInput());
+          this.input.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") this.applyCodesFromInput();
+          });
+          this.input.addEventListener("input", () => {
+            this.input.value = this.input.value.toUpperCase();
+            this.updateCodeHelp();
+          });
+          this.resizeHandler = () => {
+            for (const peer of this.peers.values()) {
+              applyVideoPresentation(peer.video, peer.remoteState?.rotation || 0, peer.remoteState?.night);
+            }
+            this.positionAllZones();
+          };
+          window.addEventListener("resize", this.resizeHandler);
+
+          this.bus = new MqttBus(
+            "heat_receiver_" + randomId(8),
+            (topic, message) => this.onSignal(topic, message),
+            (message, isError) => this.status(message, isError)
+          );
+          this.renderKnownPeers();
+          this.subscribeKnownPeers();
+          this.knownTimer = window.setInterval(() => this.renderKnownPeers(), 2000);
+          this.statsTimer = window.setInterval(() => this.updateAllPeerStats(), 1000);
+
+          let lastCodes = "";
+          try {
+            lastCodes = localStorage.getItem(STORE.lastCodes) || "";
+          } catch {
+            lastCodes = "";
+          }
+          if (lastCodes.trim()) {
+            this.input.value = lastCodes.toUpperCase();
+            this.updateCodeHelp();
+            await this.connectCodes(normalizeCodes(lastCodes));
+          }
+          this.updateCodeHelp();
+        }
+
+        async applyCodesFromInput() {
+          const codes = normalizeCodes(this.input.value);
+          await this.connectCodes(codes);
+        }
+
+        updateCodeHelp() {
+          this.codeField?.classList.toggle("has-value", !!this.input?.value.trim());
+        }
+
+        displayNameForCode(code) {
+          return this.aliases[code] || this.knownPeers[code]?.deviceName || code;
+        }
+
+        subscribeKnownPeers() {
+          for (const code of Object.keys(this.knownPeers)) {
+            if (CODE_RE.test(code)) this.bus?.subscribe(topicFor(code)).catch(() => {});
+          }
+        }
+
+        renderKnownPeers() {
+          if (!this.knownEl) return;
+          const entries = Object.values(this.knownPeers).filter((peer) => CODE_RE.test(peer.code || ""));
+          this.knownEl.classList.toggle("hidden", !entries.length);
+          if (!entries.length) {
+            this.knownEl.innerHTML = "";
+            return;
+          }
+          this.knownEl.innerHTML = entries
+            .sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0))
+            .map((peer) => {
+              const online = (this.onlineUntil.get(peer.code) || 0) > now();
+              return `<button class="peer-chip" type="button" data-code="${escapeHtml(peer.code)}">
+                <span class="peer-dot ${online ? "online" : ""}"></span>
+                <span>${escapeHtml(this.displayNameForCode(peer.code))}</span>
+                <span class="mini">${escapeHtml(peer.code)}</span>
+              </button>`;
+            }).join("");
+          this.knownEl.querySelectorAll(".peer-chip").forEach((button) => {
+            button.addEventListener("click", () => this.joinKnownPeer(button.dataset.code));
+          });
+        }
+
+        joinKnownPeer(code) {
+          if (!CODE_RE.test(code || "")) return;
+          const codes = Array.from(new Set([...normalizeCodes(this.input.value), code]));
+          this.input.value = codes.join(" ");
+          this.updateCodeHelp();
+          this.connectCodes(codes);
+        }
+
+        rememberPeer(code, state = {}) {
+          if (!CODE_RE.test(code || "")) return;
+          this.knownPeers = rememberKnownPeer(code, {
+            deviceName: state.deviceName || this.knownPeers[code]?.deviceName || code,
+            lastSeen: now()
+          });
+          this.onlineUntil.set(code, now() + 6500);
+          this.renderKnownPeers();
+        }
+
+        setMotionEnabledAll(value) {
+          this.motionEnabled = !!value;
+          document.getElementById("detectAllBtn").textContent = this.motionEnabled ? "Detect On" : "Detect Off";
+          updateSettings((settings) => { settings.receiver.motionEnabled = this.motionEnabled; });
+          for (const peer of this.peers.values()) {
+            this.sendCommand(peer, "setMotionEnabled", { value: this.motionEnabled });
+          }
+          this.status(this.motionEnabled ? "Detection enabled on all feeds" : "Detection disabled on all feeds");
+        }
+
+        disconnectAll() {
+          for (const code of Array.from(this.peers.keys())) this.closePeer(code);
+          this.input.value = "";
+          this.updateCodeHelp();
+          try {
+            localStorage.setItem(STORE.lastCodes, "");
+          } catch {
+            // Storage optional.
+          }
+          this.maximizedCode = "";
+          this.updateGrid();
+          this.status("All connections closed");
+        }
+
+        removeCodeFromInput(code) {
+          const next = normalizeCodes(this.input.value).filter((item) => item !== code);
+          this.input.value = next.join(" ");
+          this.updateCodeHelp();
+          try {
+            localStorage.setItem(STORE.lastCodes, this.input.value);
+          } catch {
+            // Storage optional.
+          }
+        }
+
+        async connectCodes(codes) {
+          const validation = validateCodes(codes);
+          if (!validation.ok) {
+            this.status(validation.message, true);
+            return;
+          }
+          const wanted = validation.codes;
+          for (const code of wanted) {
+            this.knownPeers = rememberKnownPeer(code, this.knownPeers[code] || {});
+          }
+          this.renderKnownPeers();
+          try {
+            localStorage.setItem(STORE.lastCodes, wanted.join(" "));
+          } catch {
+            // Auto-reconnect is optional when storage is blocked.
+          }
+          for (const [code, peer] of this.peers) {
+            if (!wanted.includes(code)) this.closePeer(code);
+          }
+          this.updateGrid();
+          for (const code of wanted) {
+            if (!this.peers.has(code)) {
+              this.createPeer(code).catch((error) => this.setPeerStatus(code, "Signal " + cleanError(error), true));
+            }
+          }
+          if (!wanted.length) this.status("No codes");
+        }
+
+        async createPeer(code) {
+          await this.bus.subscribe(topicFor(code));
+          const settings = loadSettings();
+          const peer = {
+            code,
+            session: randomId(10),
+            pc: makePeerConnection(),
+            dc: null,
+            tile: null,
+            video: null,
+            label: null,
+            status: "Connecting",
+            remoteState: null,
+            zone: { ...DEFAULT_ZONE, ...(settings.receiver.peerZones?.[code] || {}) },
+            savedSensitivity: clamp(Number(settings.receiver.peerSensitivity?.[code]) || 55, 20, 100),
+            queuedCandidates: [],
+            offerTimer: 0,
+            retryTimer: 0,
+            videoTimer: 0,
+            retryCount: 0,
+            videoStarted: false,
+            closed: false,
+            sendZoneThrottled: null
+          };
+          this.peers.set(code, peer);
+          this.updateGrid();
+
+          peer.pc.onicecandidate = (event) => {
+            if (event.candidate) {
+              this.bus.publish(code, {
+                type: "candidate",
+                from: this.selfId,
+                to: code,
+                session: peer.session,
+                candidate: event.candidate
+              }).catch(() => {});
+            }
+          };
+          peer.pc.ontrack = (event) => {
+            const stream = event.streams[0] || new MediaStream([event.track]);
+            const startVideo = () => {
+              if (!peer.video || peer.closed) return;
+              peer.video.muted = true;
+              peer.video.autoplay = true;
+              peer.video.playsInline = true;
+              if (peer.video.srcObject !== stream) peer.video.srcObject = stream;
+              applyVideoPresentation(peer.video, peer.remoteState?.rotation || 0, peer.remoteState?.night);
+              peer.video.play().catch(() => {});
+              peer.videoStarted = true;
+              this.watchVideo(peer);
+            };
+            event.track.onunmute = startVideo;
+            event.track.onended = () => this.retryPeer(code, "Video track ended");
+            startVideo();
+            this.setPeerStatus(code, "Video track");
+          };
+          peer.pc.onconnectionstatechange = () => {
+            if (peer.closed) return;
+            const state = peer.pc.connectionState;
+            this.setPeerStatus(code, state);
+            if (state === "connected") {
+              peer.retryCount = 0;
+              this.watchVideo(peer);
+              sleep(700).then(async () => {
+                if (peer.closed) return;
+                const codec = await detectVideoCodec(peer.pc, "in");
+                if (codec) this.setPeerStatus(code, "Connected " + codec);
+              });
+            }
+            if (state === "failed") this.retryPeer(code, "P2P failed. Trying relay.");
+            if (state === "disconnected") {
+              window.clearTimeout(peer.retryTimer);
+              peer.retryTimer = window.setTimeout(() => this.retryPeer(code, "Disconnected"), 4500);
+            }
+          };
+          peer.pc.oniceconnectionstatechange = () => {
+            if (peer.pc.iceConnectionState === "failed") this.retryPeer(code, "ICE failed. Retrying relay.");
+          };
+
+          peer.dc = peer.pc.createDataChannel(DATA_CHANNEL, { ordered: true });
+          this.bindDataChannel(peer);
+          peer.pc.addTransceiver("video", { direction: "recvonly" });
+          preferH264(peer.pc);
+          const offer = await peer.pc.createOffer();
+          await peer.pc.setLocalDescription(offer);
+          await this.bus.publish(code, {
+            type: "offer",
+            from: this.selfId,
+            to: code,
+            session: peer.session,
+            sdp: peer.pc.localDescription
+          });
+          peer.offerTimer = window.setTimeout(() => {
+            if (!peer.closed && !peer.pc.remoteDescription && peer.pc.connectionState !== "connected") {
+              this.retryPeer(code, "Offer timeout");
+            }
+          }, 5000);
+          this.setPeerStatus(code, "Offer sent");
+        }
+
+        bindDataChannel(peer) {
+          peer.dc.onopen = () => {
+            this.setPeerStatus(peer.code, "Control open");
+            this.sendCommand(peer, "setZone", { zone: peer.zone });
+            this.sendCommand(peer, "setSensitivity", { value: peer.savedSensitivity });
+            this.sendCommand(peer, "setMotionEnabled", { value: this.motionEnabled });
+          };
+          peer.dc.onmessage = (event) => this.onData(peer, event.data);
+          peer.dc.onclose = () => this.setPeerStatus(peer.code, "Control closed", true);
+          peer.dc.onerror = () => this.setPeerStatus(peer.code, "Control error", true);
+        }
+
+        onSignal(topic, message) {
+          if (this.closed || message.from === this.selfId) return;
+          const code = codeFromTopic(topic);
+          if (message.type === "presence") {
+            this.rememberPeer(code, message.state || message);
+            return;
+          }
+          if (message.to !== this.selfId) return;
+          const peer = this.peers.get(code);
+          if (!peer || message.session !== peer.session) return;
+          if (message.type === "answer" && message.sdp) {
+            this.acceptAnswer(peer, message.sdp).catch((error) => this.setPeerStatus(code, "Answer " + cleanError(error), true));
+          }
+          if (message.type === "candidate" && message.candidate) {
+            this.addIce(peer, message.candidate);
+          }
+        }
+
+        async acceptAnswer(peer, sdp) {
+          if (peer.pc.signalingState === "stable") return;
+          window.clearTimeout(peer.offerTimer);
+          await peer.pc.setRemoteDescription(new RTCSessionDescription(sdp));
+          for (const candidate of peer.queuedCandidates.splice(0)) await this.addIce(peer, candidate);
+          this.setPeerStatus(peer.code, "Answer set");
+        }
+
+        async addIce(peer, candidate) {
+          try {
+            if (!peer.pc.remoteDescription) {
+              peer.queuedCandidates.push(candidate);
+              return;
+            }
+            await peer.pc.addIceCandidate(new RTCIceCandidate(candidate));
+          } catch {
+            // Stale candidate. Ignore.
+          }
+        }
+
+        onData(peer, raw) {
+          let message;
+          try {
+            message = JSON.parse(raw);
+          } catch {
+            return;
+          }
+          if (!message || typeof message.type !== "string") return;
+          if (message.type === "state" || message.type === "heartbeat") {
+            const state = message.type === "heartbeat" ? message.state : message;
+            if (state) {
+              peer.remoteState = state;
+              this.rememberPeer(peer.code, state);
+              if (state.zone && peer.zoneEl?.dataset.dragging !== "1") peer.zone = normalizeZone(state.zone, getDisplayedVideoRect(peer.video));
+              applyVideoPresentation(peer.video, state.rotation || 0, state.night);
+              this.updateTile(peer);
+            }
+          }
+          if (message.type === "zone" && message.zone) {
+            if (peer.zoneEl?.dataset.dragging !== "1") {
+              peer.zone = normalizeZone(message.zone, getDisplayedVideoRect(peer.video));
+              this.positionPeerZone(peer);
+              this.updateTile(peer);
+            }
+          }
+          if (message.type === "snapshot" && message.capture) {
+            this.saveMotionCapture(peer, message.capture);
+          }
+          if (message.type === "motion") {
+            this.showMotion(peer, !!message.active);
+            if (message.active) {
+              this.alertMotion(peer);
+              if (message.capture) {
+                this.saveMotionCapture(peer, message.capture);
+              } else {
+                this.captureReceiverFrame(peer, message.score);
+              }
+            }
+            if (message.zone) {
+              if (peer.zoneEl?.dataset.dragging !== "1") {
+                peer.zone = normalizeZone(message.zone, getDisplayedVideoRect(peer.video));
+                this.positionPeerZone(peer);
+                this.updateTile(peer);
+              }
+            }
+          }
+        }
+
+        sendCommand(peer, type, payload = {}) {
+          if (!sendData(peer.dc, { type, ...payload })) {
+            this.setPeerStatus(peer.code, "Control pending", true);
+          }
+        }
+
+        alertMotion(peer) {
+          if (this.motionFlash) {
+            this.motionFlash.classList.remove("hit");
+            void this.motionFlash.offsetWidth;
+            this.motionFlash.classList.add("hit");
+          }
+          try {
+            if (navigator.vibrate) navigator.vibrate(90);
+          } catch {
+            // Vibration can be blocked by browser policy.
+          }
+          this.status(`${this.displayNameForCode(peer.code)} detected motion. Photo saved.`);
+        }
+
+        saveMotionCapture(peer, capture) {
+          const item = {
+            ...capture,
+            code: capture.code || peer.code,
+            deviceName: capture.deviceName || peer.remoteState?.deviceName || peer.code
+          };
+          addGalleryItem(item, "receiver-all");
+          return addGalleryItem(item, `receiver-${peer.code}`);
+        }
+
+        captureReceiverFrame(peer, score = 0) {
+          const capture = captureVideoFrame(peer.video, {
+            code: peer.code,
+            deviceName: peer.remoteState?.deviceName || peer.code,
+            score
+          });
+          if (capture) this.saveMotionCapture(peer, capture);
+        }
+
+        watchVideo(peer) {
+          window.clearTimeout(peer.videoTimer);
+          peer.videoTimer = window.setTimeout(() => {
+            if (peer.closed) return;
+            const video = peer.video;
+            const hasFrames =
+              !!video &&
+              video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
+              video.videoWidth > 0 &&
+              video.videoHeight > 0;
+            if (!hasFrames && peer.pc.connectionState === "connected") {
+              this.retryPeer(peer.code, "Video black. Retrying relay.");
+            }
+          }, 9000);
+        }
+
+        retryPeer(code, reason) {
+          const peer = this.peers.get(code);
+          if (!peer || peer.closed) return;
+          this.setPeerStatus(code, reason, true);
+          window.clearTimeout(peer.retryTimer);
+          peer.retryTimer = window.setTimeout(() => {
+            if (this.closed || !this.peers.has(code)) return;
+            this.closePeer(code);
+            this.createPeer(code).catch((error) => this.setPeerStatus(code, "Retry " + cleanError(error), true));
+          }, Math.min(9000, 1800 + peer.retryCount++ * 1200));
+        }
+
+        createTile(peer) {
+          const tile = document.createElement("article");
+          tile.className = "feed";
+          tile.dataset.code = peer.code;
+          tile.innerHTML = `
+            <video autoplay playsinline muted></video>
+            <div class="feed-stats-overlay hidden">Stats loading...</div>
+            <div class="feed-bar">
+              <div class="feed-label"></div>
+              <button class="rename" type="button">Rename</button>
+            </div>
+            <div class="zone"></div>
+            <div class="remote-controls">
+              <button class="flash" type="button">Flash</button>
+              <button class="lens" type="button">Lens</button>
+              <button class="shape" type="button">Rect Zone</button>
+              <button class="feed-gallery" type="button">Gallery</button>
+              <button class="disconnect-one" type="button">Disconnect</button>
+              <label class="range-label">Sensitivity
+                <input class="remote-sense" type="range" min="20" max="100" value="55" aria-label="Sensitivity">
+              </label>
+              <button class="close-max" type="button">Min</button>
+            </div>
+          `;
+          peer.tile = tile;
+          peer.video = tile.querySelector("video");
+          peer.label = tile.querySelector(".feed-label");
+          peer.zoneEl = tile.querySelector(".zone");
+          peer.flashBtn = tile.querySelector(".flash");
+          peer.lensBtn = tile.querySelector(".lens");
+          peer.shapeBtn = tile.querySelector(".shape");
+          peer.galleryBtn = tile.querySelector(".feed-gallery");
+          peer.disconnectBtn = tile.querySelector(".disconnect-one");
+          peer.sensitivityEl = tile.querySelector(".remote-sense");
+          peer.sendZoneThrottled = throttle(() => this.sendCommand(peer, "setZone", { zone: peer.zone }), 50);
+
+          tile.addEventListener("click", (event) => {
+            if (event.target.closest("button,input,.zone")) return;
+            this.maximizedCode = this.maximizedCode === peer.code ? "" : peer.code;
+            this.updateGrid();
+          });
+          tile.querySelector(".rename").addEventListener("click", (event) => {
+            event.stopPropagation();
+            const current = this.aliases[peer.code] || peer.remoteState?.deviceName || peer.code;
+            askAlias(current, peer.code, (clean) => {
+              if (clean) this.aliases[peer.code] = clean;
+              else delete this.aliases[peer.code];
+              saveJson(STORE.aliases, this.aliases);
+              this.renderKnownPeers();
+              this.updateTile(peer);
+            });
+          });
+          peer.flashBtn.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const next = !peer.remoteState?.torchOn;
+            this.sendCommand(peer, "setTorch", { value: next });
+          });
+          peer.lensBtn.addEventListener("click", (event) => {
+            event.stopPropagation();
+            this.sendCommand(peer, "switchCamera");
+          });
+          peer.shapeBtn.addEventListener("click", (event) => {
+            event.stopPropagation();
+            peer.zone = {
+              ...normalizeZone(peer.zone, getDisplayedVideoRect(peer.video)),
+              shape: peer.zone.shape === "ellipse" ? "rect" : "ellipse"
+            };
+            this.positionPeerZone(peer);
+            this.sendCommand(peer, "setZone", { zone: peer.zone });
+            this.updateTile(peer);
+          });
+          peer.galleryBtn.addEventListener("click", (event) => {
+            event.stopPropagation();
+            openGallery(`${this.displayNameForCode(peer.code)} Gallery`, `receiver-${peer.code}`);
+          });
+          peer.disconnectBtn.addEventListener("click", (event) => {
+            event.stopPropagation();
+            this.closePeer(peer.code);
+            this.removeCodeFromInput(peer.code);
+            this.updateGrid();
+            this.status(`${peer.code} disconnected`);
+          });
+          peer.sensitivityEl.addEventListener("input", (event) => {
+            event.stopPropagation();
+            const value = clamp(Number(peer.sensitivityEl.value) || 55, 20, 100);
+            updateSettings((settings) => {
+              settings.receiver.peerSensitivity[peer.code] = value;
+            });
+            this.sendCommand(peer, "setSensitivity", { value });
+          });
+          tile.querySelector(".close-max").addEventListener("click", (event) => {
+            event.stopPropagation();
+            this.maximizedCode = "";
+            this.updateGrid();
+          });
+          wireZone(peer.video, peer.zoneEl, () => peer.zone, (zone) => {
+            peer.zone = zone;
+            updateSettings((settings) => {
+              settings.receiver.peerZones[peer.code] = zone;
+            });
+            peer.sendZoneThrottled();
+          });
+          peer.video.addEventListener("loadedmetadata", () => this.positionPeerZone(peer));
+          return tile;
+        }
+
+        updateGrid() {
+          const peers = Array.from(this.peers.values());
+          this.screen?.classList.toggle("has-max", !!this.maximizedCode);
+          this.grid.className = "grid count-" + clamp(peers.length, 0, 4);
+          if (!peers.length) {
+            this.grid.innerHTML = `<div class="empty">Receiver watches Sender codes. Tap feed for full screen. Motion flashes, vibrates, and saves photo.</div>`;
+            return;
+          }
+          const empty = this.grid.querySelector(".empty");
+          safeRemove(empty);
+          for (const peer of peers) {
+            if (!peer.tile) this.createTile(peer);
+            if (!peer.tile.isConnected) this.grid.appendChild(peer.tile);
+            peer.tile.classList.toggle("maximized", peer.code === this.maximizedCode);
+            this.updateTile(peer);
+          }
+          this.positionAllZones();
+        }
+
+        updateTile(peer) {
+          if (!peer.tile) return;
+          const alias = this.aliases[peer.code];
+          const name = alias || peer.remoteState?.deviceName || peer.code;
+          const state = peer.status || peer.pc.connectionState || "new";
+          peer.label.textContent = `${name}  ${peer.code}  ${state}`;
+          peer.shapeBtn.textContent = peer.zone?.shape === "ellipse" ? "Oval Zone" : "Rect Zone";
+          if (peer.remoteState) {
+            peer.flashBtn.disabled = !peer.remoteState.torchSupported;
+            peer.flashBtn.textContent = peer.remoteState.torchOn ? "Flash On" : "Flash";
+            if (document.activeElement !== peer.sensitivityEl) {
+              peer.sensitivityEl.value = String(clamp(Number(peer.remoteState.sensitivity) || peer.savedSensitivity || 55, 20, 100));
+            }
+            applyVideoPresentation(peer.video, peer.remoteState.rotation || 0, peer.remoteState.night);
+          }
+          this.positionPeerZone(peer);
+        }
+
+        setPeerStatus(code, status, isError = false) {
+          const peer = this.peers.get(code);
+          if (!peer) return;
+          peer.status = status;
+          peer.tile?.classList.toggle("warn", !!isError);
+          this.updateTile(peer);
+          if (isError) this.status(`${code} ${status}`, true);
+        }
+
+        showMotion(peer, active) {
+          peer.tile?.classList.toggle("motion", active);
+          peer.zoneEl?.classList.toggle("motion", active);
+          if (active) {
+            window.clearTimeout(peer.motionTimer);
+            peer.motionTimer = window.setTimeout(() => this.showMotion(peer, false), 900);
+          }
+        }
+
+        positionPeerZone(peer) {
+          if (!peer.video || !peer.zoneEl) return;
+          if (peer.zoneEl.dataset.dragging === "1") return;
+          positionZone(peer.video, peer.zoneEl, peer.zone);
+        }
+
+        positionAllZones() {
+          for (const peer of this.peers.values()) this.positionPeerZone(peer);
+        }
+
+        closePeer(code, keepTile = false) {
+          const peer = this.peers.get(code);
+          if (!peer) return;
+          if (this.maximizedCode === code) this.maximizedCode = "";
+          peer.closed = true;
+          window.clearTimeout(peer.offerTimer);
+          window.clearTimeout(peer.retryTimer);
+          window.clearTimeout(peer.videoTimer);
+          window.clearTimeout(peer.motionTimer);
+          try { peer.dc?.close(); } catch {}
+          try { peer.pc?.close(); } catch {}
+          if (!keepTile) {
+            safeRemove(peer.tile);
+            this.peers.delete(code);
+          }
+        }
+
+        updateAllPeerStats() {
+          if (this.closed) return;
+          for (const peer of this.peers.values()) {
+            if (!peer.pc || peer.closed) continue;
+            
+            const state = peer.pc.iceConnectionState;
+            if (state === "failed" || state === "disconnected") {
+              if (!peer.lastDisconnectedAt) {
+                peer.lastDisconnectedAt = Date.now();
+              } else if (Date.now() - peer.lastDisconnectedAt > 5000) {
+                console.warn(`ICE link failed for ${peer.code} for > 5s. Triggering automatic restart...`);
+                peer.lastDisconnectedAt = null;
+                this.retryPeer(peer.code, "ICE link lost");
+                continue;
+              }
+            } else {
+              peer.lastDisconnectedAt = null;
+            }
+
+            const statsOverlay = peer.tile?.querySelector(".feed-stats-overlay");
+            if (!statsOverlay) continue;
+
+            if (this.maximizedCode !== peer.code) {
+              statsOverlay.classList.add("hidden");
+              continue;
+            }
+            statsOverlay.classList.remove("hidden");
+
+            peer.pc.getStats().then((report) => {
+              let resWidth = peer.video?.videoWidth || 0;
+              let resHeight = peer.video?.videoHeight || 0;
+              let fps = 0;
+              let iceCandidateType = "unknown";
+              let rtt = "n/a";
+              let bitrate = 0;
+
+              report.forEach((stat) => {
+                if (stat.type === "inbound-rtp" && stat.kind === "video") {
+                  if (stat.framesPerSecond) fps = stat.framesPerSecond;
+                  if (stat.frameWidth) resWidth = stat.frameWidth;
+                  if (stat.frameHeight) resHeight = stat.frameHeight;
+                  
+                  if (stat.bytesReceived && peer.lastBytesReceived) {
+                    const bytes = stat.bytesReceived - peer.lastBytesReceived;
+                    const delta = (stat.timestamp - peer.lastTimestamp) / 1000;
+                    if (delta > 0) {
+                      bitrate = Math.round((bytes * 8) / (delta * 1024));
+                    }
+                  }
+                  peer.lastBytesReceived = stat.bytesReceived;
+                  peer.lastTimestamp = stat.timestamp;
+                }
+                if (stat.type === "candidate-pair" && stat.state === "succeeded") {
+                  if (stat.currentRoundTripTime !== undefined) {
+                    rtt = Math.round(stat.currentRoundTripTime * 1000) + "ms";
+                  }
+                  if (report.get(stat.localCandidateId) && report.get(stat.remoteCandidateId)) {
+                    const local = report.get(stat.localCandidateId);
+                    const remote = report.get(stat.remoteCandidateId);
+                    iceCandidateType = `${local.candidateType} -> ${remote.candidateType}`;
+                  }
+                }
+              });
+
+              const lumaInfo = peer.remoteState?.night
+                ? `LUMA: ${peer.remoteState.night.luma} | NOISE: ${peer.remoteState.night.noise}`
+                : "LUMA: n/a";
+
+              statsOverlay.innerHTML = `
+                <div><strong>LINK STATS [${peer.code}]</strong></div>
+                <div>RES: ${resWidth}x${resHeight} @ ${Math.round(fps)}fps</div>
+                <div>ICE: ${iceCandidateType.toUpperCase()}</div>
+                <div>RTT: ${rtt} | RATE: ${bitrate} kbps</div>
+                <div>${lumaInfo}</div>
+                <div>STATE: ${peer.pc.connectionState.toUpperCase()}</div>
+              `;
+            }).catch(() => {});
+          }
+        }
+
+        close() {
+          this.closed = true;
+          window.clearInterval(this.knownTimer);
+          window.clearInterval(this.statsTimer);
+          if (this.resizeHandler) window.removeEventListener("resize", this.resizeHandler);
+          for (const code of Array.from(this.peers.keys())) this.closePeer(code);
+          this.bus?.close();
+        }
+      }
+
+      window.addEventListener("beforeunload", stopActiveMode);
+      showHome();
+    })();
+  </script>
+</body>
+</html>
