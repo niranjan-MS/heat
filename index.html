@@ -1685,11 +1685,17 @@
                 - cell_data.down.yv
                 - cell_data.down_right.yv * 0.5
               );
-              cell_data.pressure = (pressure_x + pressure_y) * 0.25;
+              
+              // CLAMP: Prevent extreme pressure spikes
+              let pressure = (pressure_x + pressure_y) * 0.25;
+              if (pressure > 8) pressure = 8;
+              else if (pressure < -8) pressure = -8;
+              cell_data.pressure = pressure;
             }
           }
 
           // 2. Solve cell velocity and apply viscosity
+          const maxCellVel = 5;
           for (let col = 0; col < num_cols; col++) {
             for (let row = 0; row < num_rows; row++) {
               const cell_data = vec_cells[col][row];
@@ -1709,8 +1715,16 @@
                 - cell_data.down.pressure
                 - cell_data.down_right.pressure * 0.5
               ) * 0.25;
-              cell_data.xv *= 0.985;
-              cell_data.yv *= 0.985;
+              
+              // Apply viscosity drag
+              cell_data.xv *= 0.98;
+              cell_data.yv *= 0.98;
+
+              // STABILITY CLAMP: Limit velocities to prevent NaN explosion
+              if (cell_data.xv > maxCellVel) cell_data.xv = maxCellVel;
+              else if (cell_data.xv < -maxCellVel) cell_data.xv = -maxCellVel;
+              if (cell_data.yv > maxCellVel) cell_data.yv = maxCellVel;
+              else if (cell_data.yv < -maxCellVel) cell_data.yv = -maxCellVel;
             }
           }
         }
@@ -1779,7 +1793,13 @@
           // Stir the fluid from pointer moves/drags (whether mouse button is down or simply hovering!)
           const mouse_xv = mouse.x - mouse.px;
           const mouse_yv = mouse.y - mouse.py;
-          if (Math.abs(mouse_xv) > 0.01 || Math.abs(mouse_yv) > 0.01) {
+          
+          // STABILITY CLAMP: Limit maximum pointer force to avoid explosive spikes
+          const maxMouseVel = 6;
+          const clamped_xv = Math.min(maxMouseVel, Math.max(-maxMouseVel, mouse_xv));
+          const clamped_yv = Math.min(maxMouseVel, Math.max(-maxMouseVel, mouse_yv));
+
+          if (Math.abs(clamped_xv) > 0.01 || Math.abs(clamped_yv) > 0.01) {
             const pen_size = 32;
             const startCol = Math.max(0, Math.floor((mouse.x - pen_size) / resolution));
             const endCol = Math.min(num_cols - 1, Math.floor((mouse.x + pen_size) / resolution));
@@ -1794,9 +1814,9 @@
                 const dy = cell_data.y - mouse.y;
                 const dist = Math.sqrt(dx * dx + dy * dy) || 1;
                 if (dist < pen_size) {
-                  const power = (pen_size / dist) * 1.8;
-                  cell_data.xv += mouse_xv * power;
-                  cell_data.yv += mouse_yv * power;
+                  const power = (pen_size / dist) * 0.45;
+                  cell_data.xv += clamped_xv * power;
+                  cell_data.yv += clamped_yv * power;
                 }
               }
             }
@@ -1888,7 +1908,7 @@
                 <small>Watch codes. Control camera. Save alerts.</small>
               </button>
             </div>
-            <div class="corner-version">v2.4.1</div>
+            <div class="corner-version">v2.4.2</div>
           </section>
         `);
         document.getElementById("senderBtn").addEventListener("click", () => startSender());
