@@ -1054,6 +1054,20 @@
       flex-direction: column;
       gap: 3px;
     }
+
+    .app-version {
+      font-size: 11px;
+      font-weight: 600;
+      color: #ff5252;
+      background: rgba(255, 43, 43, 0.15);
+      border: 1px solid rgba(255, 43, 43, 0.25);
+      border-radius: 20px;
+      padding: 2px 8px;
+      margin-left: 8px;
+      vertical-align: middle;
+      letter-spacing: 0.5px;
+      font-family: monospace;
+    }
   </style>
 </head>
 <body>
@@ -1478,7 +1492,7 @@
         setHtml(`
           <section class="screen home">
             <div class="brand">
-              <h1>Heat</h1>
+              <h1>Heat <span class="app-version">v2.1.2</span></h1>
               <p>Live camera watch with WebRTC video, motion alerts, remote controls, and automatic photo gallery.</p>
             </div>
             <div class="home-actions">
