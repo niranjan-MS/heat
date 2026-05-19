@@ -1916,7 +1916,7 @@
                 <small>Watch codes. Control camera. Save alerts.</small>
               </button>
             </div>
-            <div class="corner-version">v2.4.6</div>
+            <div class="corner-version">v2.4.7</div>
           </section>
         `);
         document.getElementById("senderBtn").addEventListener("click", () => startSender());
@@ -2963,26 +2963,8 @@
           const advanced = {};
           const level = this.night?.level || 0;
 
-          if (level > 0.18) {
-            if (Array.isArray(caps.exposureMode) && caps.exposureMode.includes("manual")) {
-              advanced.exposureMode = "manual";
-              if (caps.exposureTime && typeof caps.exposureTime.max === "number") {
-                const min = Number(caps.exposureTime.min) || 0;
-                const max = Number(caps.exposureTime.max) || 0;
-                advanced.exposureTime = clamp(min + (max - min) * 0.85, min, max);
-              }
-              if (caps.iso && typeof caps.iso.max === "number") {
-                const min = Number(caps.iso.min) || 0;
-                const max = Number(caps.iso.max) || 0;
-                advanced.iso = clamp(min + (max - min) * 0.80, min, max);
-              }
-            } else if (Array.isArray(caps.exposureMode) && caps.exposureMode.includes("continuous")) {
-              advanced.exposureMode = "continuous";
-            }
-          } else {
-            if (Array.isArray(caps.exposureMode) && caps.exposureMode.includes("continuous")) {
-              advanced.exposureMode = "continuous";
-            }
+          if (Array.isArray(caps.exposureMode) && caps.exposureMode.includes("continuous")) {
+            advanced.exposureMode = "continuous";
           }
 
           if (caps.exposureCompensation && typeof caps.exposureCompensation.max === "number") {
