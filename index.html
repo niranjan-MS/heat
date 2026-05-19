@@ -2409,82 +2409,81 @@
           const zoneHeight = clamp(zone.h * height, 8, height);
           const sx = clamp(zone.x * width, 0, Math.max(0, width - zoneWidth));
           const sy = clamp(zone.y * height, 0, Math.max(0, height - zoneHeight));
+          
           ctx.drawImage(this.video, sx, sy, zoneWidth, zoneHeight, 0, 0, canvas.width, canvas.height);
           const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
           
-          const cx = canvas.width / 2;
-          const cy = canvas.height / 2;
-          const rx = canvas.width / 2;
-          const ry = canvas.height / 2;
-          
-          const rawLumas = new Float32Array(canvas.width * canvas.height);
-          let total = 0;
+          const cw = canvas.width;
+          const ch = canvas.height;
+          const cx = cw / 2;
+          const cy = ch / 2;
+          const rx = cw / 2;
+          const ry = ch / 2;
+          const invRx = 1 / Math.max(1, rx);
+          const invRy = 1 / Math.max(1, ry);
+          const isEllipse = zone.shape === "ellipse";
+
+          const currentFrame = new Float32Array(cw * ch);
+          let totalLuma = 0;
           let count = 0;
-          for (let index = 0; index < data.length; index += 4) {
-            const pixel = index / 4;
-            const px = pixel % canvas.width;
-            const py = Math.floor(pixel / canvas.width);
-            if (zone.shape === "ellipse") {
-              const ex = (px + 0.5 - cx) / Math.max(1, rx);
-              const ey = (py + 0.5 - cy) / Math.max(1, ry);
-              if (ex * ex + ey * ey > 1) continue;
-            }
-            const lum = data[index] * 0.299 + data[index + 1] * 0.587 + data[index + 2] * 0.114;
-            rawLumas[pixel] = lum;
-            total += lum;
-            count++;
-          }
-          
-          const avg = count ? total / count : 0;
-          const sensitivityNorm = (this.sensitivity - 20) / 80;
-          const pixelThresholdBase = 38 - sensitivityNorm * 22 + Math.min(18, (this.night?.noise || 0) * 0.25);
-          
-          const currentFrame = new Float32Array(canvas.width * canvas.height);
           let noiseTotal = 0;
           let motionPixels = 0;
           let prevRelLum = 0;
           let noiseCount = 0;
-          
+
+          const avg = this.prevSample != null ? this.prevSample : 120;
           const isSettling = (now() - (this.lastExposureAdjustedAt || 0)) < 2000;
-          
-          for (let index = 0; index < data.length; index += 4) {
-            const pixel = index / 4;
-            const px = pixel % canvas.width;
-            const py = Math.floor(pixel / canvas.width);
-            if (zone.shape === "ellipse") {
-              const ex = (px + 0.5 - cx) / Math.max(1, rx);
-              const ey = (py + 0.5 - cy) / Math.max(1, ry);
-              if (ex * ex + ey * ey > 1) continue;
-            }
-            const relLum = rawLumas[pixel] - avg;
-            currentFrame[pixel] = relLum;
-            
-            if (noiseCount) noiseTotal += Math.abs(relLum - prevRelLum);
-            
-            if (this.prevFrame && !isSettling) {
-              if (Math.abs(relLum - this.prevFrame[pixel]) > pixelThresholdBase) {
-                motionPixels++;
+          const sensitivityNorm = (this.sensitivity - 20) / 80;
+          const pixelThresholdBase = 38 - sensitivityNorm * 22 + Math.min(18, (this.night?.noise || 0) * 0.25);
+
+          for (let y = 0; y < ch; y++) {
+            const ey = (y + 0.5 - cy) * invRy;
+            const eySq = ey * ey;
+            const rowOffset = y * cw;
+            for (let x = 0; x < cw; x++) {
+              const pixel = rowOffset + x;
+              if (isEllipse) {
+                const ex = (x + 0.5 - cx) * invRx;
+                if (ex * ex + eySq > 1) continue;
               }
+              
+              const index = pixel * 4;
+              const lum = data[index] * 0.299 + data[index + 1] * 0.587 + data[index + 2] * 0.114;
+              totalLuma += lum;
+              count++;
+
+              const relLum = lum - avg;
+              currentFrame[pixel] = relLum;
+
+              if (noiseCount) noiseTotal += Math.abs(relLum - prevRelLum);
+
+              if (this.prevFrame && !isSettling) {
+                if (Math.abs(relLum - this.prevFrame[pixel]) > pixelThresholdBase) {
+                  motionPixels++;
+                }
+              }
+              prevRelLum = relLum;
+              noiseCount++;
             }
-            prevRelLum = relLum;
-            noiseCount++;
           }
-          
+
+          const avgCurrent = count ? totalLuma / count : 120;
           const noise = noiseCount > 1 ? noiseTotal / (noiseCount - 1) : 0;
-          this.updateNightVision(avg, noise);
           
+          this.updateNightVision(avgCurrent, noise);
+
           if (this.prevSample == null || !this.prevFrame) {
-            this.prevSample = avg;
+            this.prevSample = avgCurrent;
             this.prevFrame = currentFrame;
             return;
           }
-          
-          this.prevSample = avg * 0.35 + this.prevSample * 0.65;
+
+          this.prevSample = avgCurrent * 0.35 + this.prevSample * 0.65;
           const pixelRatio = count ? motionPixels / count : 0;
           const rawScore = pixelRatio * 118;
           this.motionScore = this.motionScore * 0.62 + rawScore * 0.38;
           this.prevFrame = currentFrame;
-          
+
           if (!this.motionEnabled) {
             if (this.motionActive) {
               this.motionActive = false;
@@ -2495,7 +2494,7 @@
             }
             return;
           }
-          
+
           const threshold = 11.5 - sensitivityNorm * 7;
           const releaseThreshold = threshold * 0.52;
           const active = this.motionActive ? this.motionScore > releaseThreshold : this.motionScore > threshold;
