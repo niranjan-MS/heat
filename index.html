@@ -1832,8 +1832,8 @@
           updateThermalVents();
           solveFluidPhysics();
 
-          // Render canvas background
-          currentCtx.fillStyle = "#09090b";
+          // Render canvas background with a small opacity to leave trailing ribbon effects
+          currentCtx.fillStyle = "rgba(9, 9, 11, 0.08)";
           currentCtx.fillRect(0, 0, width, height);
 
           // Update and draw particles driven by fluid fields
@@ -1859,13 +1859,16 @@
               p.x += p.xv;
               p.y += p.yv;
 
-              // Draw particle specks as thick filled glowing circular splats!
-              // Diameter ranges dynamically between 1.3px and 2.5px for shimmering volumetric heat
-              const size = 1.3 + (i % 3) * 0.4;
-              currentCtx.fillStyle = p.color;
+              // Draw particles as thick flowing liquid ribbons (streams) instead of dots
+              // Thickness ranges dynamically between 4.5px and 12.0px for fat magma details
+              const thickness = 4.5 + (i % 6) * 1.5;
               currentCtx.beginPath();
-              currentCtx.arc(p.x, p.y, size, 0, Math.PI * 2);
-              currentCtx.fill();
+              currentCtx.moveTo(p.px, p.py);
+              currentCtx.lineTo(p.x, p.y);
+              currentCtx.lineWidth = thickness;
+              currentCtx.lineCap = "round";
+              currentCtx.strokeStyle = p.color;
+              currentCtx.stroke();
 
               p.px = p.x;
               p.py = p.y;
@@ -1892,7 +1895,7 @@
               <defs>
                 <filter id="magmaTurbulence">
                   <feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="2" result="noise" />
-                  <feDisplacementMap in="SourceGraphic" in2="noise" scale="32" xChannelSelector="R" yChannelSelector="G" />
+                  <feDisplacementMap in="SourceGraphic" in2="noise" scale="48" xChannelSelector="R" yChannelSelector="G" />
                 </filter>
               </defs>
             </svg>
@@ -1912,7 +1915,7 @@
                 <small>Watch codes. Control camera. Save alerts.</small>
               </button>
             </div>
-            <div class="corner-version">v2.4.3</div>
+            <div class="corner-version">v2.4.4</div>
           </section>
         `);
         document.getElementById("senderBtn").addEventListener("click", () => startSender());
