@@ -1099,8 +1099,8 @@
       height: 100%;
       z-index: -1;
       pointer-events: none;
-      filter: url(#magmaTurbulence) blur(10px) contrast(1.3) saturate(1.15);
-      opacity: 0.58;
+      filter: url(#magmaTurbulence) blur(4px) contrast(1.35) saturate(1.2);
+      opacity: 0.82;
     }
   </style>
 </head>
@@ -1715,12 +1715,57 @@
           }
         }
 
+        let mouse = { x: 0, y: 0, px: 0, py: 0, down: false };
+
+        function onPointerMove(e) {
+          if (!lavaActive) return;
+          const c = document.getElementById("lavaBackground");
+          if (!c) return;
+          const rect = c.getBoundingClientRect();
+          mouse.px = mouse.x;
+          mouse.py = mouse.y;
+
+          let clientX = 0, clientY = 0;
+          if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+          } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+          }
+
+          mouse.x = ((clientX - rect.left) / rect.width) * width;
+          mouse.y = ((clientY - rect.top) / rect.height) * height;
+        }
+
+        function onPointerDown(e) {
+          mouse.down = true;
+          onPointerMove(e);
+        }
+
+        function onPointerUp() {
+          mouse.down = false;
+        }
+
+        window.addEventListener("mousemove", onPointerMove);
+        window.addEventListener("touchmove", onPointerMove, { passive: true });
+        window.addEventListener("mousedown", onPointerDown);
+        window.addEventListener("touchstart", onPointerDown, { passive: true });
+        window.addEventListener("mouseup", onPointerUp);
+        window.addEventListener("touchend", onPointerUp);
+
         resize();
         window.addEventListener("resize", resize);
 
         function animate() {
           if (!lavaActive) {
             window.removeEventListener("resize", resize);
+            window.removeEventListener("mousemove", onPointerMove);
+            window.removeEventListener("touchmove", onPointerMove);
+            window.removeEventListener("mousedown", onPointerDown);
+            window.removeEventListener("touchstart", onPointerDown);
+            window.removeEventListener("mouseup", onPointerUp);
+            window.removeEventListener("touchend", onPointerUp);
             return;
           }
 
@@ -1730,6 +1775,34 @@
           if (!c) return;
           const currentCtx = c.getContext("2d");
           if (!currentCtx) return;
+
+          // Stir the fluid from pointer moves/drags (whether mouse button is down or simply hovering!)
+          const mouse_xv = mouse.x - mouse.px;
+          const mouse_yv = mouse.y - mouse.py;
+          if (Math.abs(mouse_xv) > 0.01 || Math.abs(mouse_yv) > 0.01) {
+            const pen_size = 32;
+            const startCol = Math.max(0, Math.floor((mouse.x - pen_size) / resolution));
+            const endCol = Math.min(num_cols - 1, Math.floor((mouse.x + pen_size) / resolution));
+            const startRow = Math.max(0, Math.floor((mouse.y - pen_size) / resolution));
+            const endRow = Math.min(num_rows - 1, Math.floor((mouse.y + pen_size) / resolution));
+
+            for (let col = startCol; col <= endCol; col++) {
+              for (let row = startRow; row <= endRow; row++) {
+                const cell_data = vec_cells[col][row];
+                if (!cell_data) continue;
+                const dx = cell_data.x - mouse.x;
+                const dy = cell_data.y - mouse.y;
+                const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                if (dist < pen_size) {
+                  const power = (pen_size / dist) * 1.8;
+                  cell_data.xv += mouse_xv * power;
+                  cell_data.yv += mouse_yv * power;
+                }
+              }
+            }
+          }
+          mouse.px = mouse.x;
+          mouse.py = mouse.y;
 
           // Update fluid convection currents
           updateThermalVents();
@@ -1762,25 +1835,13 @@
               p.x += p.xv;
               p.y += p.yv;
 
-              const dx = p.px - p.x;
-              const dy = p.py - p.y;
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              const limit = Math.random() * 0.4;
-
-              currentCtx.strokeStyle = p.color;
-              currentCtx.lineWidth = 1.5;
-
-              if (dist > limit) {
-                currentCtx.beginPath();
-                currentCtx.moveTo(p.x, p.y);
-                currentCtx.lineTo(p.px, p.py);
-                currentCtx.stroke();
-              } else {
-                currentCtx.beginPath();
-                currentCtx.moveTo(p.x, p.y);
-                currentCtx.lineTo(p.x + limit, p.y + limit);
-                currentCtx.stroke();
-              }
+              // Draw particle specks as thick filled glowing circular splats!
+              // Diameter ranges dynamically between 1.3px and 2.5px for shimmering volumetric heat
+              const size = 1.3 + (i % 3) * 0.4;
+              currentCtx.fillStyle = p.color;
+              currentCtx.beginPath();
+              currentCtx.arc(p.x, p.y, size, 0, Math.PI * 2);
+              currentCtx.fill();
 
               p.px = p.x;
               p.py = p.y;
@@ -1827,7 +1888,7 @@
                 <small>Watch codes. Control camera. Save alerts.</small>
               </button>
             </div>
-            <div class="corner-version">v2.4.0</div>
+            <div class="corner-version">v2.4.1</div>
           </section>
         `);
         document.getElementById("senderBtn").addEventListener("click", () => startSender());
