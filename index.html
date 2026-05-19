@@ -230,14 +230,21 @@
       letter-spacing: 0;
       border-radius: 34px;
       background: var(--glass);
+      border: 1.5px solid rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(34px) saturate(1.8) contrast(1.12) brightness(1.12);
       -webkit-backdrop-filter: blur(34px) saturate(1.8) contrast(1.12) brightness(1.12);
       box-shadow: var(--shadow);
       padding: 0 22px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .home-actions button:hover {
-      background: rgba(255, 255, 255, 0.075);
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 82, 82, 0.35);
+      box-shadow: 0 0 35px rgba(255, 82, 82, 0.18), inset 0 0 12px rgba(255, 82, 82, 0.06);
+      transform: translateY(-2px);
+      backdrop-filter: blur(34px) saturate(1.8) contrast(1.12) brightness(1.12);
+      -webkit-backdrop-filter: blur(34px) saturate(1.8) contrast(1.12) brightness(1.12);
     }
 
     .overlay button,
@@ -1055,18 +1062,33 @@
       gap: 3px;
     }
 
-    .app-version {
-      font-size: 11px;
+    .corner-version {
+      position: absolute;
+      bottom: max(16px, env(safe-area-inset-bottom));
+      right: max(16px, env(safe-area-inset-right));
+      font-size: 10px;
       font-weight: 600;
-      color: #ff5252;
-      background: rgba(255, 43, 43, 0.15);
-      border: 1px solid rgba(255, 43, 43, 0.25);
-      border-radius: 20px;
-      padding: 2px 8px;
-      margin-left: 8px;
-      vertical-align: middle;
-      letter-spacing: 0.5px;
+      color: rgba(255, 255, 255, 0.38);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 6px;
+      padding: 3px 8px;
+      letter-spacing: 0.8px;
       font-family: monospace;
+      z-index: 10;
+      pointer-events: none;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .overlay button:hover, 
+    .receiver-bar button:hover, 
+    .remote-controls button:hover, 
+    .gallery-head button:hover, 
+    .modal-card button:hover {
+      background: rgba(255, 255, 255, 0.12) !important;
+      border-color: rgba(255, 255, 255, 0.25) !important;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.1) !important;
     }
 
     #lavaBackground {
@@ -1077,8 +1099,8 @@
       height: 100%;
       z-index: -1;
       pointer-events: none;
-      filter: blur(18px) contrast(1.2);
-      opacity: 0.88;
+      filter: url(#magmaTurbulence) blur(14px) contrast(1.2) saturate(1.05);
+      opacity: 0.38;
     }
   </style>
 </head>
@@ -1515,52 +1537,69 @@
         let height = 0;
         
         function resize() {
-          width = canvas.width = Math.floor(window.innerWidth / 3);
-          height = canvas.height = Math.floor(window.innerHeight / 3);
+          const c = document.getElementById("lavaBackground");
+          if (!c) return;
+          width = c.width = Math.floor(window.innerWidth / 3);
+          height = c.height = Math.floor(window.innerHeight / 3);
         }
         resize();
         window.addEventListener("resize", resize);
 
+        // 12 subtle, dark, glowing molten magma blobs
         const blobs = [
-          { x: 0.2, y: 0.3, vx: 0.0012, vy: 0.0008, r: 0.28, c1: "#ffe600", c2: "#ff7700", c3: "#ff003c" },
-          { x: 0.8, y: 0.7, vx: -0.0009, vy: 0.0015, r: 0.32, c1: "#ffb700", c2: "#ff4400", c3: "#990000" },
-          { x: 0.5, y: 0.5, vx: 0.0016, vy: -0.0011, r: 0.25, c1: "#ffffff", c2: "#ffae00", c3: "#ff2b00" },
-          { x: 0.3, y: 0.8, vx: -0.0012, vy: -0.0008, r: 0.30, c1: "#ffd000", c2: "#ff3c00", c3: "#7d0000" },
-          { x: 0.7, y: 0.2, vx: 0.0008, vy: -0.0016, r: 0.26, c1: "#ff9900", c2: "#ff0066", c3: "#ff0000" }
+          { x: 0.1, y: 0.2, vx: 0.0005, vy: 0.0003, r: 0.24, c1: "#6e0000", c2: "#3b0000", c3: "#120000" },
+          { x: 0.9, y: 0.8, vx: -0.0004, vy: 0.0006, r: 0.28, c1: "#5c2000", c2: "#2d0a00", c3: "#0d0000" },
+          { x: 0.4, y: 0.6, vx: 0.0006, vy: -0.0004, r: 0.22, c1: "#6b4a00", c2: "#2e1e00", c3: "#0f0000" },
+          { x: 0.25, y: 0.75, vx: -0.0005, vy: -0.0003, r: 0.25, c1: "#570014", c2: "#260005", c3: "#0a0000" },
+          { x: 0.75, y: 0.25, vx: 0.0003, vy: -0.0006, r: 0.23, c1: "#470054", c2: "#1c0024", c3: "#070000" },
+          { x: 0.5, y: 0.2, vx: -0.0004, vy: 0.0004, r: 0.27, c1: "#610e00", c2: "#2b0400", c3: "#0d0000" },
+          { x: 0.3, y: 0.4, vx: 0.0003, vy: 0.0005, r: 0.24, c1: "#4c3000", c2: "#241600", c3: "#0a0000" },
+          { x: 0.8, y: 0.5, vx: -0.0005, vy: -0.0004, r: 0.22, c1: "#520010", c2: "#240003", c3: "#0a0000" },
+          { x: 0.6, y: 0.8, vx: 0.0004, vy: 0.0003, r: 0.26, c1: "#4f0000", c2: "#240000", c3: "#0c0000" },
+          { x: 0.15, y: 0.9, vx: 0.0003, vy: -0.0005, r: 0.21, c1: "#5c3a00", c2: "#291a00", c3: "#0c0000" },
+          { x: 0.85, y: 0.1, vx: -0.0003, vy: 0.0004, r: 0.23, c1: "#400014", c2: "#1d0005", c3: "#070000" },
+          { x: 0.5, y: 0.9, vx: -0.0004, vy: -0.0004, r: 0.25, c1: "#360000", c2: "#170000", c3: "#070000" }
         ];
 
         let tick = 0;
         function animate() {
-          if (!document.getElementById("lavaBackground")) {
+          // If the page has changed but a background tick continues, cleanly detach listener and exit
+          const c = document.getElementById("lavaBackground");
+          if (!c) {
             window.removeEventListener("resize", resize);
             return;
           }
-          tick += 0.003;
-          ctx.fillStyle = "#0c0c0e";
-          ctx.fillRect(0, 0, width, height);
+          
+          tick += 0.0025;
+          const currentCtx = c.getContext("2d");
+          if (currentCtx) {
+            currentCtx.fillStyle = "#09090b";
+            currentCtx.fillRect(0, 0, width, height);
 
-          for (const b of blobs) {
-            b.x += b.vx;
-            b.y += b.vy;
+            for (const b of blobs) {
+              b.x += b.vx;
+              b.y += b.vy;
 
-            if (b.x < -0.15 || b.x > 1.15) b.vx *= -1;
-            if (b.y < -0.15 || b.y > 1.15) b.vy *= -1;
+              // Soft elastic boundary bounce
+              if (b.x < -0.15 || b.x > 1.15) b.vx *= -1;
+              if (b.y < -0.15 || b.y > 1.15) b.vy *= -1;
 
-            const pulse = Math.sin(tick + b.r * 10) * 0.03;
-            const px = b.x * width;
-            const py = b.y * height;
-            const pr = Math.max(20, (b.r + pulse) * Math.min(width, height));
+              const pulse = Math.sin(tick + b.r * 10) * 0.025;
+              const px = b.x * width;
+              const py = b.y * height;
+              const pr = Math.max(20, (b.r + pulse) * Math.min(width, height));
 
-            const grad = ctx.createRadialGradient(px, py, 0, px, py, pr);
-            grad.addColorStop(0, b.c1);
-            grad.addColorStop(0.2, b.c2);
-            grad.addColorStop(0.65, b.c3);
-            grad.addColorStop(1, "rgba(12, 12, 14, 0)");
+              const grad = currentCtx.createRadialGradient(px, py, 0, px, py, pr);
+              grad.addColorStop(0, b.c1);
+              grad.addColorStop(0.25, b.c2);
+              grad.addColorStop(0.65, b.c3);
+              grad.addColorStop(1, "rgba(9, 9, 11, 0)");
 
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.arc(px, py, pr, 0, Math.PI * 2);
-            ctx.fill();
+              currentCtx.fillStyle = grad;
+              currentCtx.beginPath();
+              currentCtx.arc(px, py, pr, 0, Math.PI * 2);
+              currentCtx.fill();
+            }
           }
 
           lavaAnimationId = requestAnimationFrame(animate);
@@ -1572,9 +1611,19 @@
         stopActiveMode();
         setHtml(`
           <section class="screen home">
+            <!-- Inline SVG displacement filter to produce liquid wrinkles and organic diffusion Folds -->
+            <svg style="display: none;">
+              <defs>
+                <filter id="magmaTurbulence">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="2" result="noise" />
+                  <feDisplacementMap in="SourceGraphic" in2="noise" scale="32" xChannelSelector="R" yChannelSelector="G" />
+                </filter>
+              </defs>
+            </svg>
+            
             <canvas id="lavaBackground"></canvas>
             <div class="brand">
-              <h1>Heat <span class="app-version">v2.2.1</span></h1>
+              <h1>Heat</h1>
               <p>Live camera watch with WebRTC video, motion alerts, remote controls, and automatic photo gallery.</p>
             </div>
             <div class="home-actions">
@@ -1587,6 +1636,7 @@
                 <small>Watch codes. Control camera. Save alerts.</small>
               </button>
             </div>
+            <div class="corner-version">v2.3.0</div>
           </section>
         `);
         document.getElementById("senderBtn").addEventListener("click", () => startSender());
