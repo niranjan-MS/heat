@@ -1103,8 +1103,8 @@
       height: 100%;
       z-index: 0;
       pointer-events: none;
-      filter: url(#magmaTurbulence) blur(4px) contrast(1.35) saturate(1.2);
-      opacity: 0.82;
+      filter: url(#magmaTurbulence) blur(14px) contrast(1.55) saturate(1.45);
+      opacity: 0.85;
     }
   </style>
 </head>
@@ -1545,7 +1545,7 @@
         let num_cols = 0;
         let num_rows = 0;
         const resolution = 8;
-        const speck_count = 1400;
+        const speck_count = 2600;
 
         let vec_cells = [];
         let particles = [];
@@ -1558,9 +1558,10 @@
 
         function getRandomMagmaColor() {
           const rand = Math.random();
-          if (rand < 0.45) return "rgba(184, 43, 0, 0.48)";  // Fiery Crimson
-          if (rand < 0.90) return "rgba(196, 91, 0, 0.55)";  // Molten Orange-Amber
-          return "rgba(214, 153, 0, 0.65)";                  // Magma Gold Highlight
+          if (rand < 0.30) return "rgba(255, 30, 0, 0.58)";     // Hot Crimson Core
+          if (rand < 0.65) return "rgba(255, 120, 0, 0.65)";    // Viscous Orange Flow
+          if (rand < 0.88) return "rgba(255, 200, 0, 0.76)";    // Bright Yellow/Gold Highlight
+          return "rgba(255, 245, 120, 0.92)";                  // Super Intense Magma Spark (Yellow-White)
         }
 
         function resize() {
@@ -1894,8 +1895,8 @@
             <svg style="position: absolute; width: 0; height: 0; opacity: 0; pointer-events: none;">
               <defs>
                 <filter id="magmaTurbulence">
-                  <feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="2" result="noise" />
-                  <feDisplacementMap in="SourceGraphic" in2="noise" scale="48" xChannelSelector="R" yChannelSelector="G" />
+                  <feTurbulence type="fractalNoise" baseFrequency="0.024" numOctaves="3" result="noise" />
+                  <feDisplacementMap in="SourceGraphic" in2="noise" scale="58" xChannelSelector="R" yChannelSelector="G" />
                 </filter>
               </defs>
             </svg>
@@ -1915,7 +1916,7 @@
                 <small>Watch codes. Control camera. Save alerts.</small>
               </button>
             </div>
-            <div class="corner-version">v2.4.4</div>
+            <div class="corner-version">v2.4.5</div>
           </section>
         `);
         document.getElementById("senderBtn").addEventListener("click", () => startSender());
