@@ -1515,8 +1515,10 @@
       }
 
       let lavaAnimationId = 0;
+      let lavaActive = false;
 
       function stopActiveMode() {
+        lavaActive = false;
         if (lavaAnimationId) {
           cancelAnimationFrame(lavaAnimationId);
           lavaAnimationId = 0;
@@ -1528,6 +1530,7 @@
       }
 
       function startLavaSimulation() {
+        lavaActive = true;
         const canvas = document.getElementById("lavaBackground");
         if (!canvas) return;
         const ctx = canvas.getContext("2d");
@@ -1552,23 +1555,36 @@
           { x: 0.4, y: 0.6, vx: 0.0006, vy: -0.0004, r: 0.22, c1: "#6b4a00", c2: "#2e1e00", c3: "#0f0000" },
           { x: 0.25, y: 0.75, vx: -0.0005, vy: -0.0003, r: 0.25, c1: "#570014", c2: "#260005", c3: "#0a0000" },
           { x: 0.75, y: 0.25, vx: 0.0003, vy: -0.0006, r: 0.23, c1: "#470054", c2: "#1c0024", c3: "#070000" },
-          { x: 0.5, y: 0.2, vx: -0.0004, vy: 0.0004, r: 0.27, c1: "#610e00", c2: "#2b0400", c3: "#0d0000" },
+          { x: 0.5, y: 0.2, vx: -0.0004, vy: 0.0004, r: 0.27, c1: "#610e00", c2: "#2b0400", c3: "#0d0d0d" },
           { x: 0.3, y: 0.4, vx: 0.0003, vy: 0.0005, r: 0.24, c1: "#4c3000", c2: "#241600", c3: "#0a0000" },
           { x: 0.8, y: 0.5, vx: -0.0005, vy: -0.0004, r: 0.22, c1: "#520010", c2: "#240003", c3: "#0a0000" },
           { x: 0.6, y: 0.8, vx: 0.0004, vy: 0.0003, r: 0.26, c1: "#4f0000", c2: "#240000", c3: "#0c0000" },
-          { x: 0.15, y: 0.9, vx: 0.0003, vy: -0.0005, r: 0.21, c1: "#5c3a00", c2: "#291a00", c3: "#0c0000" },
+          { x: 0.15, y: 0.9, vx: 0.0003, vy: -0.0005, r: 0.21, c1: "#5c3a00", c2: "#291a00", c3: "#0c0c0c" },
           { x: 0.85, y: 0.1, vx: -0.0003, vy: 0.0004, r: 0.23, c1: "#400014", c2: "#1d0005", c3: "#070000" },
           { x: 0.5, y: 0.9, vx: -0.0004, vy: -0.0004, r: 0.25, c1: "#360000", c2: "#170000", c3: "#070000" }
         ];
 
+        // Pre-warm the fluid positions so they are highly organic and distributed on load
+        for (let i = 0; i < 200; i++) {
+          for (const b of blobs) {
+            b.x += b.vx;
+            b.y += b.vy;
+            if (b.x < -0.15 || b.x > 1.15) b.vx *= -1;
+            if (b.y < -0.15 || b.y > 1.15) b.vy *= -1;
+          }
+        }
+
         let tick = 0;
         function animate() {
-          // If the page has changed but a background tick continues, cleanly detach listener and exit
-          const c = document.getElementById("lavaBackground");
-          if (!c) {
+          if (!lavaActive) {
             window.removeEventListener("resize", resize);
             return;
           }
+          
+          lavaAnimationId = requestAnimationFrame(animate);
+
+          const c = document.getElementById("lavaBackground");
+          if (!c) return; // Skip drawing this frame, but keep the scheduling loop alive and warm!
           
           tick += 0.0025;
           const currentCtx = c.getContext("2d");
@@ -1580,7 +1596,6 @@
               b.x += b.vx;
               b.y += b.vy;
 
-              // Soft elastic boundary bounce
               if (b.x < -0.15 || b.x > 1.15) b.vx *= -1;
               if (b.y < -0.15 || b.y > 1.15) b.vy *= -1;
 
@@ -1601,8 +1616,6 @@
               currentCtx.fill();
             }
           }
-
-          lavaAnimationId = requestAnimationFrame(animate);
         }
         animate();
       }
@@ -1636,7 +1649,7 @@
                 <small>Watch codes. Control camera. Save alerts.</small>
               </button>
             </div>
-            <div class="corner-version">v2.3.0</div>
+            <div class="corner-version">v2.3.1</div>
           </section>
         `);
         document.getElementById("senderBtn").addEventListener("click", () => startSender());
